@@ -1,0 +1,1431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VerifyProp — Find Property. Verify Information. Make Better Decisions.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F5F6F1;
+  --paper-alt:#ECEEE6;
+  --panel:#FFFFFF;
+  --ink:#132039;
+  --ink-soft:#57647A;
+  --ink-faint:#8993A4;
+  --line:#DADDD1;
+  --line-strong:#C3C7B9;
+  --green:#1F7A4D;
+  --green-soft:#E3F0E7;
+  --gold:#B8862E;
+  --gold-soft:#F5EAD3;
+  --rust:#B4531F;
+  --rust-soft:#F6E7DB;
+  --red:#A3342A;
+  --red-soft:#F5E2DF;
+  --grey:#6B7280;
+  --grey-soft:#EAEBE6;
+  --serif:'Fraunces', Georgia, serif;
+  --sans:'IBM Plex Sans', -apple-system, sans-serif;
+  --mono:'IBM Plex Mono', 'Courier New', monospace;
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  margin:0; background:var(--paper); color:var(--ink); font-family:var(--sans);
+  font-size:15.5px; line-height:1.55; -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{font-family:var(--serif); font-weight:600; margin:0 0 .4em; color:var(--ink); letter-spacing:-0.01em;}
+h1{font-size:clamp(2rem,4vw,3.1rem); font-weight:600; line-height:1.06;}
+h2{font-size:clamp(1.5rem,2.6vw,2.1rem); line-height:1.15;}
+h3{font-size:1.25rem;}
+p{margin:0 0 1em;}
+a{color:inherit; text-decoration:none;}
+button{font-family:var(--sans); cursor:pointer;}
+input,select,textarea{font-family:var(--sans); font-size:.95rem;}
+::selection{background:var(--gold-soft);}
+.container{max-width:1180px; margin:0 auto; padding:0 24px;}
+.mono{font-family:var(--mono);}
+
+/* ---------- Nav ---------- */
+.topbar{background:var(--ink); color:#DDE3EE; font-size:12.5px;}
+.topbar .container{display:flex; justify-content:space-between; align-items:center; padding:6px 24px; gap:12px; flex-wrap:wrap;}
+.topbar a{color:#DDE3EE; opacity:.85;}
+.topbar a:hover{opacity:1; text-decoration:underline;}
+nav.mainnav{background:var(--panel); border-bottom:1px solid var(--line); position:sticky; top:0; z-index:40;}
+nav.mainnav .container{display:flex; align-items:center; justify-content:space-between; padding:14px 24px; gap:20px;}
+.brand{display:flex; align-items:center; gap:10px; font-family:var(--serif); font-weight:600; font-size:1.35rem; flex-shrink:0;}
+.brand .mark{width:30px; height:30px; border:2px solid var(--ink); border-radius:50%; display:flex; align-items:center; justify-content:center; position:relative;}
+.brand .mark::after{content:''; width:8px; height:14px; border-right:2.5px solid var(--green); border-bottom:2.5px solid var(--green); transform:rotate(45deg) translate(-1px,-2px);}
+.navlinks{display:flex; gap:22px; flex-wrap:wrap; font-size:14px; font-weight:500;}
+.navlinks a{color:var(--ink-soft); padding:4px 0; border-bottom:2px solid transparent;}
+.navlinks a:hover, .navlinks a.active{color:var(--ink); border-bottom-color:var(--green);}
+.navright{display:flex; align-items:center; gap:10px;}
+select#roleSwitch{border:1px solid var(--line-strong); background:var(--paper-alt); padding:7px 10px; font-size:12.5px; border-radius:3px; color:var(--ink);}
+.btn{display:inline-flex; align-items:center; gap:6px; padding:9px 16px; border-radius:3px; font-size:14px; font-weight:600; border:1px solid transparent; white-space:nowrap;}
+.btn-primary{background:var(--ink); color:#fff;}
+.btn-primary:hover{background:#0A1626;}
+.btn-outline{background:transparent; border:1px solid var(--ink); color:var(--ink);}
+.btn-outline:hover{background:var(--ink); color:#fff;}
+.btn-green{background:var(--green); color:#fff;}
+.btn-green:hover{background:#175f3c;}
+.btn-sm{padding:6px 11px; font-size:12.5px;}
+.btn:disabled{opacity:.4; cursor:not-allowed;}
+.hamburger{display:none;}
+@media(max-width:980px){
+  .navlinks{display:none;}
+  .hamburger{display:block; background:none; border:1px solid var(--line-strong); border-radius:3px; padding:7px 10px;}
+}
+
+/* ---------- Hero / sections ---------- */
+.hero{padding:56px 0 40px; border-bottom:1px solid var(--line);}
+.hero-grid{display:grid; grid-template-columns:1.1fr .9fr; gap:48px; align-items:center;}
+@media(max-width:900px){.hero-grid{grid-template-columns:1fr;}}
+.eyebrow-tag{display:inline-flex; align-items:center; gap:8px; font-size:12.5px; font-weight:600; color:var(--green); border:1px solid var(--green); border-radius:3px; padding:4px 10px; margin-bottom:18px;}
+.lede{font-size:1.08rem; color:var(--ink-soft); max-width:52ch;}
+.hero-actions{display:flex; gap:12px; margin-top:22px; flex-wrap:wrap;}
+.hero-stats{display:flex; gap:0; margin-top:34px; border-top:1px solid var(--line);}
+.hero-stats div{flex:1; padding:16px 18px 0; border-right:1px solid var(--line);}
+.hero-stats div:last-child{border-right:none;}
+.hero-stats .num{font-family:var(--serif); font-size:1.7rem; font-weight:600;}
+.hero-stats .lab{font-size:12px; color:var(--ink-faint);}
+
+.searchcard{background:var(--panel); border:1px solid var(--line-strong); border-radius:6px; padding:22px; box-shadow:0 1px 0 var(--line);}
+.tabs{display:flex; border-bottom:1px solid var(--line); margin-bottom:16px;}
+.tabs button{background:none; border:none; padding:10px 4px; margin-right:22px; font-weight:600; font-size:14px; color:var(--ink-faint); border-bottom:2px solid transparent;}
+.tabs button.active{color:var(--ink); border-bottom-color:var(--ink);}
+.field-row{display:flex; gap:10px; flex-wrap:wrap;}
+.field{flex:1; min-width:120px; display:flex; flex-direction:column; gap:4px;}
+.field label{font-size:11.5px; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-faint); font-weight:600;}
+.field input, .field select{padding:9px 10px; border:1px solid var(--line-strong); border-radius:3px; background:var(--paper);}
+
+section.block{padding:52px 0; border-bottom:1px solid var(--line);}
+.block-head{display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:26px; gap:20px; flex-wrap:wrap;}
+.block-head p{color:var(--ink-soft); margin:0; max-width:60ch;}
+
+/* ---------- Cards ---------- */
+.grid{display:grid; gap:22px;}
+.grid-3{grid-template-columns:repeat(3,1fr);}
+.grid-4{grid-template-columns:repeat(4,1fr);}
+.grid-2{grid-template-columns:repeat(2,1fr);}
+@media(max-width:900px){.grid-3,.grid-4{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:640px){.grid-3,.grid-4,.grid-2{grid-template-columns:1fr;}}
+
+.pcard{background:var(--panel); border:1px solid var(--line); border-radius:6px; overflow:hidden; display:flex; flex-direction:column; transition:border-color .15s, transform .15s;}
+.pcard:hover{border-color:var(--line-strong); transform:translateY(-2px);}
+.pcard .img{height:150px; background:linear-gradient(135deg,#DCE3D4,#C9D2C1); display:flex; align-items:center; justify-content:center; color:#6B7A63; font-size:12px; font-weight:600; position:relative;}
+.pcard .img .idtag{position:absolute; top:8px; left:8px; background:rgba(19,32,57,.85); color:#fff; font-family:var(--mono); font-size:10.5px; padding:3px 6px; border-radius:2px;}
+.pcard .body{padding:14px 16px 16px; display:flex; flex-direction:column; gap:6px; flex:1;}
+.pcard .price{font-family:var(--serif); font-weight:600; font-size:1.2rem;}
+.pcard .loc{color:var(--ink-soft); font-size:13.5px;}
+.pcard .meta{display:flex; gap:10px; font-size:12.5px; color:var(--ink-faint);}
+.pcard .foot{display:flex; justify-content:space-between; align-items:center; margin-top:auto; padding-top:10px; border-top:1px solid var(--line); font-size:12px; color:var(--ink-faint);}
+
+.status-tag{display:inline-flex; align-items:center; gap:5px; font-size:11.5px; font-weight:700; padding:3px 8px; border-radius:2px; letter-spacing:.01em; border:1px solid;}
+.status-tag::before{content:''; width:7px; height:7px; border-radius:50%; display:inline-block;}
+.st-verified{color:var(--green); border-color:var(--green); background:var(--green-soft);}
+.st-verified::before{background:var(--green);}
+.st-progress{color:var(--gold); border-color:var(--gold); background:var(--gold-soft);}
+.st-progress::before{background:var(--gold);}
+.st-unverified{color:var(--grey); border-color:var(--line-strong); background:var(--grey-soft);}
+.st-unverified::before{background:var(--grey);}
+.st-review{color:var(--rust); border-color:var(--rust); background:var(--rust-soft);}
+.st-review::before{background:var(--rust);}
+.st-rejected{color:var(--red); border-color:var(--red); background:var(--red-soft);}
+.st-rejected::before{background:var(--red);}
+.st-expired{color:var(--ink-faint); border-color:var(--line-strong); background:var(--grey-soft);}
+.st-expired::before{background:var(--ink-faint);}
+
+/* ---------- Process steps ---------- */
+.steps{display:grid; grid-template-columns:repeat(4,1fr); gap:20px;}
+@media(max-width:900px){.steps{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:560px){.steps{grid-template-columns:1fr;}}
+.step{border-top:2px solid var(--ink); padding-top:12px;}
+.step .n{font-family:var(--mono); font-size:12px; color:var(--ink-faint);}
+
+/* ---------- Footer ---------- */
+footer{background:var(--ink); color:#C7CEDB; padding:48px 0 24px; margin-top:0;}
+footer .grid-4{gap:30px;}
+footer h4{color:#fff; font-size:13px; text-transform:uppercase; letter-spacing:.05em; font-family:var(--sans); font-weight:600;}
+footer a{color:#AEB8CC; display:block; margin-bottom:8px; font-size:13.5px;}
+footer a:hover{color:#fff;}
+.footbar{border-top:1px solid #2A3852; margin-top:32px; padding-top:18px; font-size:12.5px; color:#8794AD; display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;}
+
+/* ---------- Generic page bits ---------- */
+.pagehead{padding:36px 0 24px; border-bottom:1px solid var(--line);}
+.crumb{font-size:12.5px; color:var(--ink-faint); margin-bottom:10px;}
+.crumb a:hover{text-decoration:underline;}
+.two-col{display:grid; grid-template-columns:2fr 1fr; gap:36px; align-items:start;}
+@media(max-width:900px){.two-col{grid-template-columns:1fr;}}
+.panel{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:20px;}
+.panel + .panel{margin-top:18px;}
+.checklist-item{display:flex; gap:12px; align-items:flex-start; padding:11px 0; border-bottom:1px solid var(--line);}
+.checklist-item:last-child{border-bottom:none;}
+.check-dot{width:20px; height:20px; border-radius:50%; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:12px; margin-top:1px;}
+.check-dot.done{background:var(--green); color:#fff;}
+.check-dot.pending{border:1.5px dashed var(--line-strong); color:transparent;}
+.hist-item{padding:10px 0; border-bottom:1px solid var(--line); font-size:13.5px;}
+.hist-item:last-child{border-bottom:none;}
+.hist-item .date{color:var(--ink-faint); font-size:12px; font-family:var(--mono);}
+.idplate{display:inline-flex; align-items:center; gap:8px; font-family:var(--mono); font-weight:600; letter-spacing:.03em; border:1.5px solid var(--ink); padding:6px 10px; border-radius:3px; background:var(--paper-alt); font-size:13px;}
+.disclaimer{font-size:12.5px; color:var(--ink-faint); background:var(--paper-alt); border-left:3px solid var(--gold); padding:12px 14px; border-radius:0 3px 3px 0;}
+.badge-mini{font-size:11px; padding:2px 7px; border-radius:2px; background:var(--paper-alt); border:1px solid var(--line-strong); color:var(--ink-soft); font-weight:600;}
+table.data{width:100%; border-collapse:collapse; font-size:13.5px;}
+table.data th{text-align:left; font-size:11.5px; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-faint); border-bottom:1px solid var(--line-strong); padding:8px 10px; font-weight:600;}
+table.data td{padding:9px 10px; border-bottom:1px solid var(--line);}
+table.data tr:hover td{background:var(--paper-alt);}
+.formgrid{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+@media(max-width:640px){.formgrid{grid-template-columns:1fr;}}
+.formfield{display:flex; flex-direction:column; gap:5px;}
+.formfield label{font-size:12.5px; font-weight:600; color:var(--ink-soft);}
+.formfield input,.formfield select,.formfield textarea{padding:9px 11px; border:1px solid var(--line-strong); border-radius:3px; background:#fff;}
+.formfield.full{grid-column:1/-1;}
+.metric-row{display:grid; grid-template-columns:repeat(6,1fr); gap:14px;}
+@media(max-width:980px){.metric-row{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:560px){.metric-row{grid-template-columns:repeat(2,1fr);}}
+.metric{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:14px 16px;}
+.metric .num{font-family:var(--serif); font-size:1.6rem; font-weight:600;}
+.metric .lab{font-size:11.5px; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.03em;}
+.tab-strip{display:flex; gap:4px; flex-wrap:wrap; border-bottom:1px solid var(--line); margin-bottom:20px;}
+.tab-strip button{background:none; border:none; padding:9px 14px; font-size:13px; font-weight:600; color:var(--ink-faint); border-bottom:2px solid transparent; border-radius:3px 3px 0 0;}
+.tab-strip button.active{color:var(--ink); border-bottom-color:var(--green); background:var(--paper-alt);}
+.dash-shell{display:grid; grid-template-columns:220px 1fr; gap:0; border:1px solid var(--line); border-radius:6px; overflow:hidden; background:var(--panel);}
+@media(max-width:900px){.dash-shell{grid-template-columns:1fr;}}
+.dash-side{background:var(--paper-alt); border-right:1px solid var(--line); padding:16px 0;}
+.dash-side button{display:block; width:100%; text-align:left; background:none; border:none; padding:10px 20px; font-size:13.5px; font-weight:500; color:var(--ink-soft);}
+.dash-side button.active{color:var(--ink); font-weight:700; background:#fff; border-right:3px solid var(--green); margin-right:-1px;}
+.dash-side button:hover{color:var(--ink);}
+.dash-main{padding:26px 28px;}
+.wizard-steps{display:flex; gap:4px; margin-bottom:22px; flex-wrap:wrap;}
+.wizard-steps span{font-size:11px; padding:5px 9px; border-radius:2px; background:var(--paper-alt); border:1px solid var(--line); color:var(--ink-faint); font-weight:600;}
+.wizard-steps span.wdone{background:var(--green-soft); border-color:var(--green); color:var(--green);}
+.wizard-steps span.wcur{background:var(--ink); border-color:var(--ink); color:#fff;}
+.progress-track{height:8px; background:var(--paper-alt); border-radius:4px; overflow:hidden; border:1px solid var(--line);}
+.progress-fill{height:100%; background:var(--green);}
+.toggle-row{display:flex; align-items:center; justify-content:space-between; padding:12px 14px; border:1px solid var(--line); border-radius:4px; margin-bottom:8px; background:var(--paper-alt);}
+.toggle-row.on{background:var(--green-soft); border-color:var(--green);}
+.switch{width:38px; height:21px; border-radius:12px; background:var(--line-strong); position:relative; flex-shrink:0; border:none;}
+.switch.on{background:var(--green);}
+.switch::after{content:''; width:16px; height:16px; background:#fff; border-radius:50%; position:absolute; top:2px; left:2px; transition:.15s;}
+.switch.on::after{left:19px;}
+.certificate{border:2px solid var(--ink); border-radius:8px; padding:26px; background:repeating-linear-gradient(135deg,#fff,#fff 24px,#FAFAF6 24px,#FAFAF6 48px); position:relative;}
+.certificate .seal{position:absolute; top:20px; right:24px; width:64px; height:64px; border:2px solid var(--gold); border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:var(--serif); font-size:11px; color:var(--gold); font-weight:700; text-align:center; line-height:1.15;}
+.qr-box{width:150px; height:150px; border:1px solid var(--line-strong); padding:6px; background:#fff; border-radius:4px;}
+.qr-box img{width:100%; height:100%;}
+.alert{padding:12px 14px; border-radius:4px; font-size:13.5px; margin-bottom:14px;}
+.alert-warn{background:var(--rust-soft); color:var(--rust); border:1px solid var(--rust);}
+.alert-ok{background:var(--green-soft); color:var(--green); border:1px solid var(--green);}
+.alert-info{background:var(--gold-soft); color:#8a6820; border:1px solid var(--gold);}
+.pill-row{display:flex; gap:8px; flex-wrap:wrap;}
+.chip{font-size:12px; padding:5px 10px; border:1px solid var(--line-strong); border-radius:20px; background:var(--paper-alt); color:var(--ink-soft); cursor:pointer;}
+.chip.active{background:var(--ink); color:#fff; border-color:var(--ink);}
+.access-gate{max-width:520px; margin:60px auto; text-align:center; padding:40px 30px; border:1px dashed var(--line-strong); border-radius:8px; background:var(--panel);}
+.doc-lock{display:flex; align-items:center; gap:10px; padding:10px 14px; background:var(--paper-alt); border:1px solid var(--line); border-radius:4px; font-size:13px; color:var(--ink-faint);}
+.avatar{width:44px; height:44px; border-radius:50%; background:var(--paper-alt); border:1px solid var(--line-strong); display:flex; align-items:center; justify-content:center; font-family:var(--serif); font-weight:600; color:var(--ink-soft); flex-shrink:0;}
+.prof-card{display:flex; gap:14px; padding:16px; border:1px solid var(--line); border-radius:6px; background:var(--panel);}
+.sim-note{font-size:11.5px; color:var(--ink-faint); font-style:italic;}
+::placeholder{color:#A9AFA0;}
+.link-btn{background:none;border:none;color:var(--green);font-weight:600;font-size:inherit;padding:0;}
+.link-btn:hover{text-decoration:underline;}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+/* =========================================================================
+   VERIFYPROP — front-end demo application
+   Single-file SPA simulating the full MVP: property listing, structured
+   verification workflow, Property IDs, certificates, QR public verification,
+   RBAC-gated dashboards, duplicate flags, reporting, and audit logging.
+   All data is mocked and stored in localStorage — this file has no backend.
+   ========================================================================= */
+
+const LS_KEY = 'verifyprop_demo_v1';
+
+const CHECK_DEFS = [
+  {key:'physicalInspection', label:'Physical inspection', step:1, desc:'Surveyor physically visited and inspected the property.'},
+  {key:'locationConfirmed', label:'Location confirmed', step:1, desc:'Address and coordinates match the physical site.'},
+  {key:'ownerIdentity', label:'Owner / instructor identity checked', step:2, desc:'Identity of the owner or instructing party was confirmed.'},
+  {key:'authorityToMarket', label:'Authority to market confirmed', step:3, desc:'Instructing party has authority to market/let this property.'},
+  {key:'descriptionChecked', label:'Property description checked', step:4, desc:'Listing description matches what was observed on site.'},
+  {key:'priceConfirmed', label:'Price confirmed', step:4, desc:'Asking price confirmed with the instructing party.'},
+  {key:'occupancyChecked', label:'Occupancy checked', step:4, desc:'Current occupancy status was confirmed.'},
+  {key:'documentsReviewed', label:'Supporting / title documents reviewed', step:5, desc:'Available documents were reviewed by the professional.'},
+  {key:'encumbranceCheck', label:'Encumbrance / dispute check', step:6, desc:'Checked for known disputes or encumbrances where information is available.'},
+  {key:'duplicateCheck', label:'Duplicate listing check', step:6, desc:'Checked the platform for existing listings of this property.'},
+];
+const STEP_LABELS = ['Property Identity','Owner Information','Authority to Market','Property Information','Documentation','Risk Checks','Professional Review','Verification Record','Verification Certificate'];
+
+const AREA_CODES = {'Yaba':'YAB','Surulere':'SUR','Ikeja':'IKJ','Ebute-Metta':'EBM','Shomolu':'SHO','Mushin':'MUS','Bariga':'BAR'};
+
+function seedData(){
+  const firms = [
+    {id:'F1', name:'Ashcroft & Doyin Surveyors', regNo:'ESVARBON/F/00214', address:'12 Herbert Macaulay Way, Yaba, Lagos', founded:2011},
+    {id:'F2', name:'Lekki Coastal Valuers Ltd', regNo:'ESVARBON/F/00389', address:'4 Adeniran Ogunsanya St, Surulere, Lagos', founded:2016},
+    {id:'F3', name:'Mainland Chartered Surveyors', regNo:'ESVARBON/F/00097', address:'21 Awolowo Rd, Ikeja, Lagos', founded:2005},
+  ];
+  const professionals = [
+    {id:'P1', name:'Tunde Adisa', firmId:'F1', licenseNo:'ESV/2014/00871', specialty:'Residential valuation', years:11, verifiedCount:212, bio:'Registered Estate Surveyor & Valuer covering Yaba, Ebute-Metta and Surulere. Focused on residential due-diligence and pre-let inspections.'},
+    {id:'P2', name:'Ifeoma Nwachukwu', firmId:'F2', licenseNo:'ESV/2017/01532', specialty:'Commercial & land verification', years:8, verifiedCount:134, bio:'Handles commercial property and land-title verification across Lagos Mainland, with a focus on encumbrance checks.'},
+    {id:'P3', name:'Segun Bello', firmId:'F3', licenseNo:'ESV/2011/00340', specialty:'Residential & rental', years:14, verifiedCount:301, bio:'Long-standing surveyor in Ikeja and Mushin, specialising in rental occupancy verification.'},
+    {id:'P4', name:'Amaka Okafor', firmId:'F1', licenseNo:'ESV/2020/02110', specialty:'Documentation review', years:5, verifiedCount:58, bio:'Junior surveyor supporting title-document review and duplicate-listing checks.'},
+  ];
+
+  function mkChecks(pattern){
+    const c = {};
+    CHECK_DEFS.forEach((d,i)=>{ c[d.key] = {completed: pattern[i]===1, note: pattern[i]===1 ? 'Confirmed during site visit.' : '', date: pattern[i]===1 ? '2026-08-0'+(2+i%7) : null}; });
+    return c;
+  }
+
+  const properties = [
+    {id:'PR1', propertyId:'LAG-YAB-2026-00482', title:'3-Bedroom Flat, off Herbert Macaulay', type:'Flat/Apartment', purpose:'Rent', area:'Yaba', address:'14 Alagomeji St, Yaba', lat:6.5090, lng:3.3790, price:2800000, priceUnit:'/year', bedrooms:3, bathrooms:3, size:'120 sqm', availability:'Available now', description:'A well-maintained 3-bedroom flat on the first floor of a low-density block, five minutes from Yaba Tech. Fitted kitchen, prepaid meter, and shared generator.', status:'Verified', verificationId:'VER-2026-00931', verificationDate:'2026-08-12', professionalId:'P1', firmId:'F1', checks:mkChecks([1,1,1,1,1,1,1,1,1,1]), owner:'Owner on file (private)', history:[
+      {date:'2026-07-20', event:'Property submitted by owner'},
+      {date:'2026-07-22', event:'Property ID issued: LAG-YAB-2026-00482'},
+      {date:'2026-08-01', event:'Verification request accepted by Tunde Adisa'},
+      {date:'2026-08-12', event:'Verification approved — certificate issued'},
+    ]},
+    {id:'PR2', propertyId:'LAG-SUR-2026-00117', title:'2-Bedroom Terrace, Adelabu', type:'Terrace House', purpose:'Rent', area:'Surulere', address:'9 Adelabu St, Surulere', lat:6.4959, lng:3.3556, price:1800000, priceUnit:'/year', bedrooms:2, bathrooms:2, size:'95 sqm', availability:'Available from Oct 2026', description:'Quiet terrace unit within a gated compound, walking distance to National Stadium.', status:'Verification in Progress', verificationId:null, verificationDate:null, professionalId:'P2', firmId:'F2', checks:mkChecks([1,1,1,0,0,0,0,0,0,0]), owner:'Owner on file (private)', history:[
+      {date:'2026-08-18', event:'Property submitted by owner'},
+      {date:'2026-08-19', event:'Property ID issued: LAG-SUR-2026-00117'},
+      {date:'2026-08-25', event:'Verification request accepted by Ifeoma Nwachukwu'},
+    ]},
+    {id:'PR3', propertyId:'LAG-IKJ-2026-00256', title:'4-Bedroom Detached Duplex, GRA', type:'Detached Duplex', purpose:'Buy', area:'Ikeja', address:'6 Oyinkan Abayomi Dr, Ikeja GRA', lat:6.5793, lng:3.3512, price:185000000, priceUnit:'', bedrooms:4, bathrooms:5, size:'450 sqm', availability:'Available now', description:'Detached duplex on a tarred close in Ikeja GRA with BQ and private borehole.', status:'Verified', verificationId:'VER-2026-00877', verificationDate:'2026-07-29', professionalId:'P3', firmId:'F3', checks:mkChecks([1,1,1,1,1,1,1,1,1,1]), owner:'Owner on file (private)', history:[
+      {date:'2026-06-30', event:'Property submitted by owner'},
+      {date:'2026-07-02', event:'Property ID issued: LAG-IKJ-2026-00256'},
+      {date:'2026-07-10', event:'Verification request accepted by Segun Bello'},
+      {date:'2026-07-29', event:'Verification approved — certificate issued'},
+    ]},
+    {id:'PR4', propertyId:'LAG-EBM-2026-00033', title:'Self-Contain Studio, Otto', type:'Self-Contain', purpose:'Rent', area:'Ebute-Metta', address:'3 Otto Wharf Rd, Ebute-Metta', lat:6.4880, lng:3.3782, price:450000, priceUnit:'/year', bedrooms:1, bathrooms:1, size:'28 sqm', availability:'Available now', description:'Compact self-contain unit suitable for a single occupant, close to Iddo motor park.', status:'Unverified', verificationId:null, verificationDate:null, professionalId:null, firmId:null, checks:mkChecks([0,0,0,0,0,0,0,0,0,0]), owner:'Owner on file (private)', history:[
+      {date:'2026-09-02', event:'Property submitted by owner'},
+      {date:'2026-09-02', event:'Property ID issued: LAG-EBM-2026-00033'},
+    ]},
+    {id:'PR5', propertyId:'LAG-SHO-2026-00061', title:'3-Bedroom Bungalow, Bariga Rd', type:'Bungalow', purpose:'Buy', area:'Shomolu', address:'22 Bariga Rd, Shomolu', lat:6.5350, lng:3.3820, price:62000000, priceUnit:'', bedrooms:3, bathrooms:2, size:'210 sqm', availability:'Available now', description:'Corner-piece bungalow with room for vertical extension, near Shomolu market.', status:'Needs Review', verificationId:null, verificationDate:null, professionalId:'P4', firmId:'F1', checks:mkChecks([1,1,1,1,1,0,1,0,0,0]), owner:'Owner on file (private)', history:[
+      {date:'2026-08-01', event:'Property submitted by owner'},
+      {date:'2026-08-03', event:'Property ID issued: LAG-SHO-2026-00061'},
+      {date:'2026-08-14', event:'Verification request accepted by Amaka Okafor'},
+      {date:'2026-08-27', event:'Flagged: inconsistency between title document and description — sent for regulatory review'},
+    ]},
+    {id:'PR6', propertyId:'LAG-MUS-2026-00204', title:'Shop Space, Mushin Market Rd', type:'Commercial', purpose:'Rent', area:'Mushin', address:'8 Mushin Market Rd', lat:6.5297, lng:3.3520, price:900000, priceUnit:'/year', bedrooms:0, bathrooms:1, size:'32 sqm', availability:'Available now', description:'Ground-floor shop unit facing the main market road, previously used as a provisions store.', status:'Rejected', verificationId:null, verificationDate:null, professionalId:'P2', firmId:'F2', checks:mkChecks([1,1,0,0,1,1,1,1,0,0]), owner:'Owner on file (private)', history:[
+      {date:'2026-07-05', event:'Property submitted by owner'},
+      {date:'2026-07-06', event:'Property ID issued: LAG-MUS-2026-00204'},
+      {date:'2026-07-15', event:'Verification request accepted by Ifeoma Nwachukwu'},
+      {date:'2026-07-30', event:'Verification rejected — instructing party could not establish authority to market'},
+    ]},
+    {id:'PR7', propertyId:'LAG-YAB-2025-00398', title:'2-Bedroom Flat, Akoka', type:'Flat/Apartment', purpose:'Rent', area:'Yaba', address:'17 Alhaji Masha Cl, Akoka', lat:6.5170, lng:3.3860, price:1500000, priceUnit:'/year', bedrooms:2, bathrooms:2, size:'80 sqm', availability:'Available now', description:'Flat close to UNILAG back gate, popular with staff and postgraduate students.', status:'Expired', verificationId:'VER-2025-00412', verificationDate:'2025-06-18', professionalId:'P1', firmId:'F1', checks:mkChecks([1,1,1,1,1,1,1,1,1,1]), owner:'Owner on file (private)', history:[
+      {date:'2025-05-20', event:'Property submitted by owner'},
+      {date:'2025-06-18', event:'Verification approved — certificate issued'},
+      {date:'2026-06-18', event:'Verification expired after 12 months — re-verification required'},
+    ]},
+    {id:'PR8', propertyId:'LAG-SUR-2026-00305', title:'3-Bedroom Flat, Ijesha Rd', type:'Flat/Apartment', purpose:'Rent', area:'Surulere', address:'31 Ijesha Rd, Surulere', lat:6.5030, lng:3.3460, price:2200000, priceUnit:'/year', bedrooms:3, bathrooms:2, size:'110 sqm', availability:'Available from Nov 2026', description:'Renovated flat in a family compound, close to Bode Thomas.', status:'Verified', verificationId:'VER-2026-00958', verificationDate:'2026-08-30', professionalId:'P2', firmId:'F2', checks:mkChecks([1,1,1,1,1,1,1,1,1,1]), owner:'Owner on file (private)', history:[
+      {date:'2026-08-05', event:'Property submitted by owner'},
+      {date:'2026-08-06', event:'Property ID issued: LAG-SUR-2026-00305'},
+      {date:'2026-08-20', event:'Verification request accepted by Ifeoma Nwachukwu'},
+      {date:'2026-08-30', event:'Verification approved — certificate issued'},
+    ]},
+  ];
+
+  const duplicateFlags = [
+    {id:'DF1', propertyIds:['LAG-SUR-2026-00117','LAG-SUR-2026-00305'], reason:'Similar address radius and matching bedroom/size profile', status:'Under review', raised:'2026-08-28'},
+  ];
+  const reports = [
+    {id:'RP1', propertyId:'LAG-MUS-2026-00204', reason:'Suspicious ownership', details:'Contact person could not confirm relationship to the property.', status:'Investigating', date:'2026-08-02', reporter:'Public visitor'},
+    {id:'RP2', propertyId:'LAG-SHO-2026-00061', reason:'Incorrect price', details:'Price shown differs from what agent quoted on call.', status:'Resolved', date:'2026-08-10', reporter:'Property seeker'},
+  ];
+  const auditLogs = [
+    {id:'A1', user:'Owner — U-2291', action:'Property created', entity:'Property', entityId:'LAG-EBM-2026-00033', prev:'—', next:'Unverified', ts:'2026-09-02 09:14'},
+    {id:'A2', user:'Amaka Okafor', action:'Verification check completed', entity:'VerificationCheck', entityId:'LAG-SHO-2026-00061 / priceConfirmed', prev:'Incomplete', next:'Complete', ts:'2026-08-19 11:02'},
+    {id:'A3', user:'Amaka Okafor', action:'Property flagged', entity:'Property', entityId:'LAG-SHO-2026-00061', prev:'Verification in Progress', next:'Needs Review', ts:'2026-08-27 16:40'},
+    {id:'A4', user:'Ifeoma Nwachukwu', action:'Verification rejected', entity:'VerificationRecord', entityId:'LAG-MUS-2026-00204', prev:'Verification in Progress', next:'Rejected', ts:'2026-07-30 10:20'},
+    {id:'A5', user:'Ifeoma Nwachukwu', action:'Verification approved', entity:'VerificationRecord', entityId:'LAG-SUR-2026-00305', prev:'Verification in Progress', next:'Verified', ts:'2026-08-30 14:55'},
+    {id:'A6', user:'System', action:'Verification expired', entity:'Property', entityId:'LAG-YAB-2025-00398', prev:'Verified', next:'Expired', ts:'2026-06-18 00:00'},
+  ];
+  const notifications = [
+    {id:'N1', text:'Verification request for LAG-SUR-2026-00117 is 3/10 checks complete.', ts:'2026-08-25'},
+    {id:'N2', text:'New duplicate flag raised for LAG-SUR-2026-00117 and LAG-SUR-2026-00305.', ts:'2026-08-28'},
+    {id:'N3', text:'Certificate issued for LAG-SUR-2026-00305.', ts:'2026-08-30'},
+  ];
+
+  return {firms, professionals, properties, duplicateFlags, reports, auditLogs, notifications, users:[
+    {id:'U1', name:'Chidinma Eze', role:'Property Seeker'},
+    {id:'U2', name:'Bayo Ogunleye', role:'Property Owner'},
+  ]};
+}
+
+function loadState(){
+  let raw = localStorage.getItem(LS_KEY);
+  if(raw){ try{ return JSON.parse(raw); }catch(e){} }
+  const data = seedData();
+  const st = {...data, role:'Public Visitor', route:'#/home'};
+  localStorage.setItem(LS_KEY, JSON.stringify(st));
+  return st;
+}
+let STATE = loadState();
+function save(){ localStorage.setItem(LS_KEY, JSON.stringify(STATE)); }
+function resetDemo(){ localStorage.removeItem(LS_KEY); STATE = loadState(); render(); }
+
+/* ---------- helpers ---------- */
+function money(n){ if(n===0) return '—'; return '₦' + n.toLocaleString('en-NG'); }
+function statusClass(s){
+  return {'Verified':'st-verified','Verification in Progress':'st-progress','Unverified':'st-unverified','Needs Review':'st-review','Rejected':'st-rejected','Expired':'st-expired'}[s] || 'st-unverified';
+}
+function firmName(id){ const f = STATE.firms.find(f=>f.id===id); return f? f.name : '—'; }
+function profById(id){ return STATE.professionals.find(p=>p.id===id); }
+function propByPid(pid){ return STATE.properties.find(p=>p.propertyId.toLowerCase()===pid.toLowerCase()); }
+function checksCompleted(p){ return CHECK_DEFS.filter(c=>p.checks[c.key].completed).length; }
+function nextPropertyId(area){
+  const code = AREA_CODES[area] || 'LAG';
+  const year = 2026;
+  const existing = STATE.properties.filter(p=>p.propertyId.includes('-'+code+'-'+year+'-')).length;
+  const seq = String(482 + existing + 1).padStart(5,'0');
+  return `LAG-${code}-${year}-${seq}`;
+}
+function nextVerificationId(){
+  const existing = STATE.properties.filter(p=>p.verificationId).length;
+  return `VER-2026-${String(931+existing+1).padStart(5,'0')}`;
+}
+function logAudit(user, action, entity, entityId, prev, next){
+  STATE.auditLogs.unshift({id:'A'+(STATE.auditLogs.length+1), user, action, entity, entityId, prev, next, ts:new Date().toISOString().slice(0,16).replace('T',' ')});
+}
+function qrImg(text, size){ return `https://api.qrserver.com/v1/create-qr-code/?size=${size||150}x${size||150}&data=${encodeURIComponent(text)}`; }
+function go(route){ location.hash = route; }
+function esc(s){ return (s||'').toString().replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+/* ---------- ROLE ACCESS ---------- */
+const ROLES = ['Public Visitor','Property Seeker','Property Owner','Estate Surveyor/Valuer','Firm Administrator','Platform Administrator','Regulatory Reviewer'];
+function requireRole(routeName, roles){
+  if(!roles.includes(STATE.role)){
+    return `<div class="access-gate">
+      <div class="eyebrow-tag" style="border-color:var(--rust);color:var(--rust);">Restricted area</div>
+      <h3>This ${routeName} requires a different role</h3>
+      <p style="color:var(--ink-soft)">In production this is enforced with real authentication and server-side authorization. For this demo, switch roles from the selector in the top navigation to preview this area.</p>
+      <p class="sim-note">Needs one of: ${roles.join(', ')} — you are currently viewing as ${STATE.role}.</p>
+    </div>`;
+  }
+  return null;
+}
+
+/* =========================================================================
+   RENDER: layout
+   ========================================================================= */
+function layout(routeName, contentHtml){
+  return `
+  <div class="topbar"><div class="container">
+    <span>Lagos Mainland property verification registry — demo build</span>
+    <span><a href="#/how-it-works">How verification works</a> &nbsp;·&nbsp; <a href="#/safety">Safety &amp; education</a> &nbsp;·&nbsp; <a href="#/contact">Contact</a></span>
+  </div></div>
+  <nav class="mainnav"><div class="container">
+    <a href="#/home" class="brand"><span class="mark"></span>VerifyProp</a>
+    <div class="navlinks">
+      <a href="#/search" class="${routeName==='search'?'active':''}">Search</a>
+      <a href="#/verify" class="${routeName==='verify'?'active':''}">Verify a Property</a>
+      <a href="#/professionals" class="${routeName==='professionals'?'active':''}">Professionals</a>
+      <a href="#/how-it-works" class="${routeName==='how-it-works'?'active':''}">How it works</a>
+      <a href="#/safety" class="${routeName==='safety'?'active':''}">Safety Centre</a>
+      <a href="#/about" class="${routeName==='about'?'active':''}">About</a>
+    </div>
+    <div class="navright">
+      <select id="roleSwitch" onchange="switchRole(this.value)" title="Demo role switcher — simulates login as different roles">
+        ${ROLES.map(r=>`<option value="${r}" ${STATE.role===r?'selected':''}>${r}</option>`).join('')}
+      </select>
+      ${dashLinkForRole()}
+      <button class="btn btn-outline btn-sm hamburger" onclick="go('#/search')">☰</button>
+    </div>
+  </div></nav>
+  <main>${contentHtml}</main>
+  ${footer()}
+  `;
+}
+function dashLinkForRole(){
+  if(STATE.role==='Estate Surveyor/Valuer') return `<a href="#/pro-dashboard" class="btn btn-green btn-sm">Professional Portal</a>`;
+  if(STATE.role==='Platform Administrator') return `<a href="#/admin" class="btn btn-green btn-sm">Admin Dashboard</a>`;
+  if(STATE.role==='Firm Administrator') return `<a href="#/firm-dashboard" class="btn btn-green btn-sm">Firm Dashboard</a>`;
+  if(STATE.role==='Regulatory Reviewer') return `<a href="#/regulatory" class="btn btn-green btn-sm">Regulatory Review</a>`;
+  if(STATE.role==='Property Owner') return `<a href="#/owner-dashboard" class="btn btn-green btn-sm">My Properties</a>`;
+  return `<a href="#/login" class="btn btn-outline btn-sm">Log in</a><a href="#/register" class="btn btn-primary btn-sm">Register</a>`;
+}
+function footer(){
+  return `<footer><div class="container">
+    <div class="grid grid-4">
+      <div>
+        <div class="brand" style="color:#fff; margin-bottom:10px;"><span class="mark" style="border-color:#fff;"></span>VerifyProp</div>
+        <p style="color:#AEB8CC; font-size:13px; max-width:32ch;">A property information transparency registry for Lagos Mainland. We verify what can be verified, and show our work.</p>
+      </div>
+      <div><h4>Platform</h4>
+        <a href="#/search">Property Search</a><a href="#/verify">Verify a Property</a><a href="#/professionals">Professionals</a><a href="#/how-it-works">How verification works</a>
+      </div>
+      <div><h4>Trust &amp; safety</h4>
+        <a href="#/safety">Safety &amp; Education Centre</a><a href="#/report">Report a listing</a><a href="#/about">About VerifyProp</a><a href="#/contact">Contact us</a>
+      </div>
+      <div><h4>Account</h4>
+        <a href="#/login">Log in</a><a href="#/register">Register</a>
+        <a href="#" onclick="resetDemo();return false;">Reset demo data</a>
+      </div>
+    </div>
+    <div class="footbar">
+      <span>© 2026 VerifyProp. Demonstration build — not a live registry.</span>
+      <span>Verification confirms that specified information and checks were reviewed under VerifyProp's process. It is not a guarantee against legal disputes, fraud, or future risk.</span>
+    </div>
+  </div></footer>`;
+}
+
+/* =========================================================================
+   PAGE: HOME
+   ========================================================================= */
+function pageHome(){
+  const verified = STATE.properties.filter(p=>p.status==='Verified').slice(0,4);
+  const total = STATE.properties.length;
+  const vcount = STATE.properties.filter(p=>p.status==='Verified').length;
+  return `
+  <section class="hero"><div class="container hero-grid">
+    <div>
+      <div class="eyebrow-tag">Lagos Mainland registry</div>
+      <h1>Find Property. Verify Information. Make Better Decisions.</h1>
+      <p class="lede">VerifyProp is a property information registry, not just a listings site. Every property carries a clear verification status, a unique Property ID, and a public record of exactly what a licensed professional checked.</p>
+      <div class="hero-actions">
+        <a href="#/search" class="btn btn-primary">Search properties</a>
+        <a href="#/verify" class="btn btn-outline">Verify a Property ID</a>
+      </div>
+      <div class="hero-stats">
+        <div><div class="num">${total}</div><div class="lab">Properties on record</div></div>
+        <div><div class="num">${vcount}</div><div class="lab">Fully verified</div></div>
+        <div><div class="num">${STATE.professionals.length}</div><div class="lab">Registered professionals</div></div>
+        <div><div class="num">10</div><div class="lab">Checks per verification</div></div>
+      </div>
+    </div>
+    <div class="searchcard">
+      <div class="tabs"><button class="active" onclick="go('#/search')">Search properties</button><button onclick="go('#/verify')">Verify by Property ID</button></div>
+      <div class="field-row">
+        <div class="field"><label>Location</label><select><option>Any area</option>${Object.keys(AREA_CODES).map(a=>`<option>${a}</option>`).join('')}</select></div>
+        <div class="field"><label>Buy / Rent</label><select><option>Any</option><option>Buy</option><option>Rent</option></select></div>
+      </div>
+      <div class="field-row" style="margin-top:10px;">
+        <div class="field"><label>Property type</label><select><option>Any type</option><option>Flat/Apartment</option><option>Detached Duplex</option><option>Bungalow</option><option>Commercial</option></select></div>
+        <div class="field"><label>Verification status</label><select><option>Any status</option><option>Verified</option><option>Unverified</option></select></div>
+      </div>
+      <button class="btn btn-primary" style="width:100%; margin-top:16px; justify-content:center;" onclick="go('#/search')">Search properties</button>
+      <p class="sim-note" style="margin-top:10px;">Have a Property ID already, e.g. <span class="mono">LAG-YAB-2026-00482</span>? <a href="#/verify" class="link-btn">Check it directly →</a></p>
+    </div>
+  </div></section>
+
+  <section class="block"><div class="container">
+    <div class="block-head">
+      <div><h2>Recently verified properties</h2><p>Each listing shows exactly what was checked, by whom, and when — not just a badge.</p></div>
+      <a href="#/search" class="btn btn-outline btn-sm">View all properties</a>
+    </div>
+    <div class="grid grid-4">
+      ${verified.map(propertyCard).join('')}
+    </div>
+  </div></section>
+
+  <section class="block"><div class="container">
+    <div class="block-head"><div><h2>How verification works</h2><p>A structured, professional workflow — not a self-reported checkbox.</p></div><a href="#/how-it-works" class="btn btn-outline btn-sm">Full breakdown</a></div>
+    <div class="steps">
+      <div class="step"><div class="n">01</div><h3>Property is submitted</h3><p style="color:var(--ink-soft); font-size:14px;">An owner submits property details and receives a unique Property ID immediately, with status "Unverified".</p></div>
+      <div class="step"><div class="n">02</div><h3>Professional reviews it</h3><p style="color:var(--ink-soft); font-size:14px;">A registered Estate Surveyor/Valuer works through 10 mandatory checks: identity, authority, documents, price, occupancy, and more.</p></div>
+      <div class="step"><div class="n">03</div><h3>Record is created</h3><p style="color:var(--ink-soft); font-size:14px;">Only when all mandatory checks are complete can a Verification Record and Certificate be issued — never by a single click.</p></div>
+      <div class="step"><div class="n">04</div><h3>Anyone can check it</h3><p style="color:var(--ink-soft); font-size:14px;">The public verification page and QR code let anyone confirm the record — showing what was verified, not just a badge.</p></div>
+    </div>
+  </div></section>
+
+  <section class="block"><div class="container">
+    <div class="block-head"><div><h2>Safety &amp; education</h2><p>Practical guidance for spending money on Lagos Mainland property with confidence.</p></div><a href="#/safety" class="btn btn-outline btn-sm">Visit Safety Centre</a></div>
+    <div class="grid grid-3">
+      <div class="panel"><h3 style="font-size:1.05rem;">Before you pay any money</h3><p style="color:var(--ink-soft); font-size:14px;">Never pay agency, inspection, or caution fees before confirming a Property ID and meeting the verifying professional.</p></div>
+      <div class="panel"><h3 style="font-size:1.05rem;">Understand the status</h3><p style="color:var(--ink-soft); font-size:14px;">"Verification in Progress" is not the same as "Verified." Read the checklist, not just the badge colour.</p></div>
+      <div class="panel"><h3 style="font-size:1.05rem;">Report what looks wrong</h3><p style="color:var(--ink-soft); font-size:14px;">Duplicate listings, mismatched prices, or a property that doesn't seem to exist should be reported immediately.</p></div>
+    </div>
+  </div></section>
+
+  <section class="block"><div class="container">
+    <div class="block-head"><div><h2>Registered professionals</h2><p>Every verification is signed to a named, licensed Estate Surveyor/Valuer and firm.</p></div><a href="#/professionals" class="btn btn-outline btn-sm">Browse professionals</a></div>
+    <div class="grid grid-4">
+      ${STATE.professionals.map(p=>`
+        <div class="prof-card">
+          <div class="avatar">${p.name.split(' ').map(n=>n[0]).join('')}</div>
+          <div>
+            <div style="font-weight:700;">${p.name}</div>
+            <div style="font-size:12.5px; color:var(--ink-faint);">${firmName(p.firmId)}</div>
+            <div style="font-size:12px; color:var(--ink-faint); margin-top:4px;">${p.verifiedCount} verifications</div>
+            <a href="#/professional/${p.id}" class="link-btn" style="font-size:12.5px;">View profile →</a>
+          </div>
+        </div>`).join('')}
+    </div>
+  </div></section>
+
+  <section class="block" style="border-bottom:none;"><div class="container">
+    <div class="panel" style="display:flex; justify-content:space-between; align-items:center; gap:20px; flex-wrap:wrap; background:var(--paper-alt);">
+      <div><h3 style="margin-bottom:4px;">Seen a listing that looks wrong?</h3><p style="margin:0; color:var(--ink-soft);">Report duplicate listings, incorrect prices, or suspicious ownership claims.</p></div>
+      <a href="#/report" class="btn btn-primary">Report a listing</a>
+    </div>
+  </div></section>
+  `;
+}
+function propertyCard(p){
+  return `<div class="pcard">
+    <div class="img">${p.type}<span class="idtag">${p.propertyId}</span></div>
+    <div class="body">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+        <span class="price">${money(p.price)}${p.priceUnit}</span>
+        <span class="status-tag ${statusClass(p.status)}">${p.status}</span>
+      </div>
+      <div class="loc">${p.area} · ${p.purpose}</div>
+      <div class="meta">${p.bedrooms?p.bedrooms+' bed':''} ${p.bathrooms? '· '+p.bathrooms+' bath':''} · ${p.size}</div>
+      <div class="foot"><span>${p.verificationDate? 'Verified '+p.verificationDate : 'Not yet verified'}</span><a href="#/property/${p.id}" class="btn btn-outline btn-sm">View</a></div>
+    </div>
+  </div>`;
+}
+
+/* =========================================================================
+   PAGE: SEARCH
+   ========================================================================= */
+function pageSearch(qp){
+  qp = qp || {};
+  let list = [...STATE.properties];
+  if(qp.area) list = list.filter(p=>p.area===qp.area);
+  if(qp.purpose) list = list.filter(p=>p.purpose===qp.purpose);
+  if(qp.status) list = list.filter(p=>p.status===qp.status);
+  if(qp.type) list = list.filter(p=>p.type===qp.type);
+  return `
+  <div class="pagehead"><div class="container">
+    <div class="crumb"><a href="#/home">Home</a> / Search</div>
+    <h1 style="font-size:1.9rem;">Property Search</h1>
+    <p style="color:var(--ink-soft); max-width:70ch;">Filter by location, verification status, and more. Verification status is shown on every result — never assume a listing is verified until you can see the checklist.</p>
+  </div></div>
+  <div class="container" style="padding:28px 24px 60px;">
+    <div class="two-col">
+      <div>
+        <div class="pill-row" style="margin-bottom:18px;">
+          ${['All','Verified','Verification in Progress','Unverified','Needs Review'].map(s=>`<span class="chip ${((qp.status||'All')===s)?'active':''}" onclick="go('#/search?status=${encodeURIComponent(s==='All'?'':s)}')">${s}</span>`).join('')}
+        </div>
+        <p class="sim-note" style="margin-bottom:14px;">${list.length} propert${list.length===1?'y':'ies'} found</p>
+        <div class="grid grid-3">
+          ${list.length ? list.map(propertyCard).join('') : '<p>No properties match these filters.</p>'}
+        </div>
+      </div>
+      <div>
+        <div class="panel">
+          <h3 style="font-size:1rem;">Refine results</h3>
+          <div class="formfield" style="margin-bottom:12px;"><label>Location</label>
+            <select onchange="go('#/search?area='+encodeURIComponent(this.value))">
+              <option value="">Any area</option>
+              ${Object.keys(AREA_CODES).map(a=>`<option ${qp.area===a?'selected':''}>${a}</option>`).join('')}
+            </select>
+          </div>
+          <div class="formfield" style="margin-bottom:12px;"><label>Property type</label>
+            <select onchange="go('#/search?type='+encodeURIComponent(this.value))">
+              <option value="">Any type</option>
+              ${[...new Set(STATE.properties.map(p=>p.type))].map(t=>`<option ${qp.type===t?'selected':''}>${t}</option>`).join('')}
+            </select>
+          </div>
+          <div class="formfield" style="margin-bottom:12px;"><label>Buy / Rent</label>
+            <select onchange="go('#/search?purpose='+encodeURIComponent(this.value))">
+              <option value="">Any</option><option ${qp.purpose==='Buy'?'selected':''}>Buy</option><option ${qp.purpose==='Rent'?'selected':''}>Rent</option>
+            </select>
+          </div>
+          <div class="formfield" style="margin-bottom:12px;"><label>Price range</label>
+            <select><option>Any price</option><option>Under ₦1,000,000</option><option>₦1,000,000 – ₦5,000,000</option><option>Above ₦5,000,000</option></select>
+          </div>
+          <div class="formfield" style="margin-bottom:12px;"><label>Bedrooms</label>
+            <select><option>Any</option><option>1</option><option>2</option><option>3</option><option>4+</option></select>
+          </div>
+          <div class="formfield" style="margin-bottom:12px;"><label>Verification date</label>
+            <select><option>Any time</option><option>Last 30 days</option><option>Last 90 days</option><option>Last 12 months</option></select>
+          </div>
+          <div class="formfield"><label>Professional / Firm</label>
+            <select><option>Any</option>${STATE.firms.map(f=>`<option>${f.name}</option>`).join('')}</select>
+          </div>
+          <button class="btn btn-primary" style="width:100%; justify-content:center; margin-top:16px;" onclick="go('#/search')">Reset filters</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* =========================================================================
+   PAGE: PROPERTY DETAILS
+   ========================================================================= */
+function pagePropertyDetail(id){
+  const p = STATE.properties.find(x=>x.id===id);
+  if(!p) return `<div class="container" style="padding:60px 24px;"><h2>Property not found</h2><a href="#/search" class="btn btn-outline">Back to search</a></div>`;
+  const done = checksCompleted(p);
+  return `
+  <div class="pagehead"><div class="container">
+    <div class="crumb"><a href="#/home">Home</a> / <a href="#/search">Search</a> / ${p.propertyId}</div>
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap;">
+      <div><h1 style="font-size:1.9rem;">${p.title}</h1><p style="color:var(--ink-soft); margin:0;">${p.area} · ${p.type} · For ${p.purpose}</p></div>
+      <div style="text-align:right;"><span class="status-tag ${statusClass(p.status)}">${p.status}</span><div class="idplate" style="margin-top:8px;">${p.propertyId}</div></div>
+    </div>
+  </div></div>
+  <div class="container" style="padding:28px 24px 60px;">
+    <div class="two-col">
+      <div>
+        <div class="img" style="height:280px; border-radius:6px; margin-bottom:20px; font-size:14px;">Property images (${3} on file)</div>
+        <div class="panel">
+          <h3>Description</h3>
+          <p style="color:var(--ink-soft);">${p.description}</p>
+          <div class="grid grid-4" style="margin-top:14px;">
+            <div><div class="badge-mini">PRICE</div><div style="font-weight:700; margin-top:4px;">${money(p.price)}${p.priceUnit}</div></div>
+            <div><div class="badge-mini">BEDROOMS</div><div style="font-weight:700; margin-top:4px;">${p.bedrooms||'—'}</div></div>
+            <div><div class="badge-mini">BATHROOMS</div><div style="font-weight:700; margin-top:4px;">${p.bathrooms||'—'}</div></div>
+            <div><div class="badge-mini">SIZE</div><div style="font-weight:700; margin-top:4px;">${p.size}</div></div>
+          </div>
+          <div class="grid grid-2" style="margin-top:14px;">
+            <div><div class="badge-mini">LOCATION</div><div style="margin-top:4px;">${p.address}</div></div>
+            <div><div class="badge-mini">AVAILABILITY</div><div style="margin-top:4px;">${p.availability}</div></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;">
+            <h3 style="margin:0;">Verification checklist</h3>
+            <span class="badge-mini">${done} of ${CHECK_DEFS.length} checks completed</span>
+          </div>
+          <div class="progress-track" style="margin:12px 0 6px;"><div class="progress-fill" style="width:${done/CHECK_DEFS.length*100}%"></div></div>
+          <p class="sim-note" style="margin-bottom:14px;">Verification confirms that the information below was reviewed under VerifyProp's process — it is not a guarantee against future disputes, fraud, or ownership claims.</p>
+          ${CHECK_DEFS.map(c=>{
+            const done_ = p.checks[c.key].completed;
+            return `<div class="checklist-item">
+              <div class="check-dot ${done_?'done':'pending'}">${done_?'✓':''}</div>
+              <div style="flex:1;">
+                <div style="font-weight:600; font-size:14px;">${c.label}</div>
+                <div style="font-size:12.5px; color:var(--ink-faint);">${c.desc}</div>
+              </div>
+              <div style="font-size:12px; color:var(--ink-faint); white-space:nowrap;">${done_? p.checks[c.key].date : 'Pending'}</div>
+            </div>`;
+          }).join('')}
+          <div class="doc-lock" style="margin-top:14px;">🔒 Supporting documents reviewed during verification are held securely and are not publicly downloadable.</div>
+        </div>
+
+        <div class="panel">
+          <h3>Verification history</h3>
+          ${p.history.map(h=>`<div class="hist-item"><div class="date">${h.date}</div>${h.event}</div>`).join('')}
+        </div>
+      </div>
+      <div>
+        <div class="panel">
+          <h3 style="font-size:1rem;">Verification summary</h3>
+          ${p.verificationId ? `
+            <div style="margin-bottom:10px;"><div class="badge-mini">VERIFICATION ID</div><div class="mono" style="font-weight:600;">${p.verificationId}</div></div>
+            <div style="margin-bottom:10px;"><div class="badge-mini">VERIFIED ON</div><div>${p.verificationDate}</div></div>
+          ` : `<p class="sim-note">No verification record exists yet for this property.</p>`}
+          ${p.professionalId ? `
+          <div style="margin-bottom:10px;"><div class="badge-mini">PROFESSIONAL</div><a href="#/professional/${p.professionalId}" class="link-btn">${profById(p.professionalId).name} →</a></div>
+          <div><div class="badge-mini">FIRM</div><div>${firmName(p.firmId)}</div></div>` : ''}
+          ${p.status==='Verified' ? `<a href="#/certificate/${p.id}" class="btn btn-green" style="width:100%; justify-content:center; margin-top:14px;">View certificate</a>` : ''}
+        </div>
+        <div class="panel">
+          <h3 style="font-size:1rem;">Check this Property ID</h3>
+          <div class="idplate" style="width:100%; justify-content:center;">${p.propertyId}</div>
+          <a href="#/verify?pid=${p.propertyId}" class="btn btn-outline" style="width:100%; justify-content:center; margin-top:12px;">Open on Verify page</a>
+        </div>
+        <div class="panel" style="background:var(--paper-alt);">
+          <h3 style="font-size:1rem;">Something not right?</h3>
+          <p style="font-size:13.5px; color:var(--ink-soft);">Report this listing if the information looks incorrect, duplicated, or suspicious.</p>
+          <a href="#/report?pid=${p.propertyId}" class="btn btn-outline" style="width:100%; justify-content:center;">Report this listing</a>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* =========================================================================
+   PAGE: VERIFY
+   ========================================================================= */
+function pageVerify(qp){
+  qp = qp || {};
+  const pid = qp.pid || '';
+  const result = pid ? propByPid(pid) : null;
+  return `
+  <div class="pagehead"><div class="container">
+    <div class="crumb"><a href="#/home">Home</a> / Verify a Property</div>
+    <h1 style="font-size:1.9rem;">Verify a Property</h1>
+    <p style="color:var(--ink-soft); max-width:70ch;">Enter a Property ID or scan the QR code on a verification certificate to confirm what has actually been checked.</p>
+  </div></div>
+  <div class="container" style="padding:28px 24px 60px;">
+    <div class="panel" style="max-width:640px; margin:0 auto 24px;">
+      <div class="formfield">
+        <label>Property ID</label>
+        <div style="display:flex; gap:8px;">
+          <input id="pidInput" placeholder="e.g. LAG-YAB-2026-00482" value="${esc(pid)}" style="flex:1; font-family:var(--mono);">
+          <button class="btn btn-primary" onclick="go('#/verify?pid='+encodeURIComponent(document.getElementById('pidInput').value.trim()))">Check</button>
+        </div>
+      </div>
+      <p class="sim-note" style="margin-top:10px;">Try: ${STATE.properties.slice(0,3).map(p=>`<a href="#/verify?pid=${p.propertyId}" class="link-btn mono">${p.propertyId}</a>`).join(', ')}</p>
+      <div style="text-align:center; margin-top:16px; padding-top:16px; border-top:1px solid var(--line);">
+        <p class="sim-note">Have a QR code from a certificate?</p>
+        <button class="btn btn-outline btn-sm">Scan QR code</button>
+        <p class="sim-note" style="margin-top:6px;">(QR scanning opens the same page this certificate's Property ID links to.)</p>
+      </div>
+    </div>
+
+    ${pid ? (result ? `
+      <div class="panel" style="max-width:640px; margin:0 auto;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
+          <div><h3 style="margin-bottom:2px;">${result.title}</h3><div class="idplate">${result.propertyId}</div></div>
+          <span class="status-tag ${statusClass(result.status)}">${result.status}</span>
+        </div>
+        <div class="grid grid-2" style="margin-top:16px;">
+          <div><div class="badge-mini">VERIFICATION ID</div><div class="mono" style="margin-top:4px;">${result.verificationId || 'Not yet issued'}</div></div>
+          <div><div class="badge-mini">VERIFICATION DATE</div><div style="margin-top:4px;">${result.verificationDate || '—'}</div></div>
+          <div><div class="badge-mini">PROFESSIONAL</div><div style="margin-top:4px;">${result.professionalId ? profById(result.professionalId).name : '—'}</div></div>
+          <div><div class="badge-mini">FIRM</div><div style="margin-top:4px;">${firmName(result.firmId)}</div></div>
+        </div>
+        <div class="disclaimer" style="margin:16px 0;">Verification confirms that ${checksCompleted(result)} of ${CHECK_DEFS.length} defined checks were reviewed under VerifyProp's process. It does not guarantee the property is free from legal disputes, fraud, or future risk.</div>
+        <h4 style="font-size:.95rem;">Verification summary</h4>
+        <div class="grid grid-2">
+          ${CHECK_DEFS.map(c=>`<div style="font-size:13px; display:flex; gap:6px; align-items:center;"><span class="check-dot ${result.checks[c.key].completed?'done':'pending'}" style="width:16px;height:16px;font-size:10px;">${result.checks[c.key].completed?'✓':''}</span>${c.label}</div>`).join('')}
+        </div>
+        <a href="#/property/${result.id}" class="btn btn-primary" style="width:100%; justify-content:center; margin-top:18px;">View full property record</a>
+      </div>
+    ` : `<div class="panel" style="max-width:640px; margin:0 auto;"><div class="alert alert-warn">No property found for Property ID "${esc(pid)}". Double-check the ID and try again, or report a suspicious listing.</div></div>`) : ''}
+  </div>`;
+}
+
+/* =========================================================================
+   PAGE: CERTIFICATE
+   ========================================================================= */
+function pageCertificate(id){
+  const p = STATE.properties.find(x=>x.id===id);
+  if(!p || !p.verificationId) return `<div class="container" style="padding:60px 24px;"><h2>No certificate available</h2><p>This property does not have an issued verification certificate.</p><a href="#/property/${id}" class="btn btn-outline">Back to property</a></div>`;
+  const verifyUrl = `https://verifyprop.example/verify?pid=${p.propertyId}`;
+  return `
+  <div class="container" style="padding:40px 24px 60px; max-width:720px;">
+    <div class="crumb"><a href="#/property/${p.id}">${p.propertyId}</a> / Certificate</div>
+    <div class="certificate">
+      <div class="seal">VERIFYPROP<br>SEAL</div>
+      <div class="eyebrow-tag">Verification Certificate</div>
+      <h2 style="margin-bottom:4px;">${p.title}</h2>
+      <div class="idplate" style="margin-bottom:18px;">${p.propertyId}</div>
+      <div class="grid grid-2" style="margin-bottom:18px;">
+        <div><div class="badge-mini">VERIFICATION ID</div><div class="mono" style="font-weight:700;">${p.verificationId}</div></div>
+        <div><div class="badge-mini">STATUS</div><div><span class="status-tag ${statusClass(p.status)}">${p.status}</span></div></div>
+        <div><div class="badge-mini">VERIFICATION DATE</div><div>${p.verificationDate}</div></div>
+        <div><div class="badge-mini">PROFESSIONAL</div><div>${profById(p.professionalId).name}, ${firmName(p.firmId)}</div></div>
+      </div>
+      <div style="display:flex; gap:20px; align-items:center; flex-wrap:wrap;">
+        <div class="qr-box"><img src="${qrImg(verifyUrl,150)}" alt="QR code linking to public verification page"></div>
+        <div style="flex:1; min-width:220px;">
+          <p style="font-size:13px; color:var(--ink-soft); margin:0 0 8px;">Scan this code, or visit the link below, to confirm this record on VerifyProp's public verification page at any time.</p>
+          <p class="mono" style="font-size:12px; word-break:break-all;">${verifyUrl}</p>
+        </div>
+      </div>
+      <div class="disclaimer" style="margin-top:18px;">This certificate confirms that ${CHECK_DEFS.length} defined checks were reviewed by the named professional under VerifyProp's verification process. It is not a guarantee against legal disputes, fraud, ownership claims, or future risk.</div>
+    </div>
+    <div style="display:flex; gap:10px; margin-top:16px;">
+      <button class="btn btn-outline" onclick="window.print()">Print / save as PDF</button>
+      <a href="#/verify?pid=${p.propertyId}" class="btn btn-outline">Open public verification page</a>
+    </div>
+  </div>`;
+}
+
+/* =========================================================================
+   PAGE: PROFESSIONALS + PROFILE
+   ========================================================================= */
+function pageProfessionals(){
+  return `
+  <div class="pagehead"><div class="container">
+    <div class="crumb"><a href="#/home">Home</a> / Professionals</div>
+    <h1 style="font-size:1.9rem;">Registered Professionals</h1>
+    <p style="color:var(--ink-soft); max-width:70ch;">Every verification on VerifyProp is signed to a named, licensed Estate Surveyor/Valuer. Browse professionals and their verification history.</p>
+  </div></div>
+  <div class="container" style="padding:28px 24px 60px;">
+    <div class="grid grid-2">
+      ${STATE.professionals.map(p=>`
+        <div class="prof-card">
+          <div class="avatar" style="width:56px;height:56px;font-size:1.1rem;">${p.name.split(' ').map(n=>n[0]).join('')}</div>
+          <div style="flex:1;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+              <div><div style="font-weight:700; font-size:1.05rem;">${p.name}</div><div style="font-size:13px; color:var(--ink-faint);">${firmName(p.firmId)}</div></div>
+              <span class="badge-mini">${p.verifiedCount} verifications</span>
+            </div>
+            <p style="font-size:13.5px; color:var(--ink-soft); margin:8px 0;">${p.specialty} · ${p.years} years registered</p>
+            <a href="#/professional/${p.id}" class="btn btn-outline btn-sm">View profile</a>
+          </div>
+        </div>`).join('')}
+    </div>
+  </div>`;
+}
+function pageProfessionalProfile(id){
+  const p = profById(id);
+  if(!p) return `<div class="container" style="padding:60px 24px;"><h2>Professional not found</h2></div>`;
+  const props = STATE.properties.filter(x=>x.professionalId===id);
+  return `
+  <div class="pagehead"><div class="container">
+    <div class="crumb"><a href="#/professionals">Professionals</a> / ${p.name}</div>
+    <div style="display:flex; gap:18px; align-items:center;">
+      <div class="avatar" style="width:64px;height:64px;font-size:1.3rem;">${p.name.split(' ').map(n=>n[0]).join('')}</div>
+      <div><h1 style="font-size:1.7rem; margin-bottom:2px;">${p.name}</h1><p style="color:var(--ink-soft); margin:0;">${firmName(p.firmId)} · License ${p.licenseNo}</p></div>
+    </div>
+  </div></div>
+  <div class="container" style="padding:28px 24px 60px;">
+    <div class="two-col">
+      <div>
+        <div class="panel"><h3>About</h3><p style="color:var(--ink-soft);">${p.bio}</p></div>
+        <div class="panel"><h3>Verification history</h3>
+          <table class="data"><thead><tr><th>Property ID</th><th>Property</th><th>Status</th><th>Date</th></tr></thead><tbody>
+          ${props.map(pr=>`<tr><td class="mono">${pr.propertyId}</td><td><a href="#/property/${pr.id}" class="link-btn">${pr.title}</a></td><td><span class="status-tag ${statusClass(pr.status)}">${pr.status}</span></td><td>${pr.verificationDate||'—'}</td></tr>`).join('')}
+          </tbody></table>
+        </div>
+      </div>
+      <div>
+        <div class="panel">
+          <div class="metric" style="border:none; padding:0;"><div class="num">${p.verifiedCount}</div><div class="lab">Total verifications completed</div></div>
+          <hr style="border:none; border-top:1px solid var(--line); margin:14px 0;">
+          <div><div class="badge-mini">SPECIALTY</div><div style="margin:4px 0 10px;">${p.specialty}</div></div>
+          <div><div class="badge-mini">YEARS REGISTERED</div><div style="margin:4px 0 10px;">${p.years}</div></div>
+          <div><div class="badge-mini">LICENSE NUMBER</div><div class="mono" style="margin-top:4px;">${p.licenseNo}</div></div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* =========================================================================
+   PAGE: HOW IT WORKS / SAFETY / ABOUT / CONTACT / REPORT / LOGIN / REGISTER
+   ========================================================================= */
+function pageHowItWorks(){
+  return `
+  <div class="pagehead"><div class="container">
+    <div class="crumb"><a href="#/home">Home</a> / How Verification Works</div>
+    <h1 style="font-size:1.9rem;">How Verification Works</h1>
+    <p style="color:var(--ink-soft); max-width:70ch;">Every property moves through a fixed nine-stage workflow, carried out by a registered Estate Surveyor/Valuer. A property cannot become "Verified" from a single button click — all ten mandatory checks and the professional review must be complete.</p>
+  </div></div>
+  <div class="container" style="padding:28px 24px 60px;">
+    <div class="two-col">
+      <div>
+        ${STEP_LABELS.map((s,i)=>`
+          <div class="panel" style="display:flex; gap:16px;">
+            <div class="mono" style="font-size:1.3rem; font-weight:600; color:var(--ink-faint); width:34px;">${String(i+1).padStart(2,'0')}</div>
+            <div><h3 style="font-size:1.05rem; margin-bottom:4px;">${s}</h3><p style="color:var(--ink-soft); margin:0; font-size:14px;">${stepDesc(i+1)}</p></div>
+          </div>
+        `).join('')}
+      </div>
+      <div>
+        <div class="panel"><h3 style="font-size:1rem;">The 10 mandatory checks</h3>
+          ${CHECK_DEFS.map(c=>`<div style="font-size:13.5px; padding:7px 0; border-bottom:1px solid var(--line);">${c.label}</div>`).join('')}
+        </div>
+        <div class="panel disclaimer">Verification means specified information and checks were reviewed under this process. It is never a guarantee that a property is free from legal disputes, fraud, ownership claims, or future risk.</div>
+      </div>
+    </div>
+  </div>`;
+}
+function stepDesc(n){
+  return [
+   'Basic property facts and location are recorded and a unique Property ID is issued.',
+   'The professional confirms the identity of the owner or instructing party.',
+   'The professional confirms the instructing party actually has authority to market or let the property.',
+   'Description, price, and occupancy status are checked against what was observed on site.',
+   'Available supporting and title documents are reviewed by the professional.',
+   'The property is checked for known encumbrances, disputes, and duplicate listings.',
+   'A senior professional reviews the completed checklist before anything is finalised.',
+   'A Verification Record is created with a unique Verification ID, permanently linked to the Property ID.',
+   'A digital Verification Certificate with a QR code is generated for public checking.'
+  ][n-1];
+}
+function pageSafety(){
+  return `
+  <div class="pagehead"><div class="container">
+    <div class="crumb"><a href="#/home">Home</a> / Safety &amp; Education Centre</div>
+    <h1 style="font-size:1.9rem;">Safety &amp; Education Centre</h1>
+    <p style="color:var(--ink-soft); max-width:70ch;">Practical guidance for reducing risk when engaging with property information on Lagos Mainland.</p>
+  </div></div>
+  <div class="container" style="padding:28px 24px 60px;">
+    <div class="grid grid-2">
+      <div class="panel"><h3>Read the checklist, not the badge</h3><p style="color:var(--ink-soft);">A green badge alone tells you little. Open the property record and read which of the ten checks were completed, by whom, and when.</p></div>
+      <div class="panel"><h3>Confirm the Property ID first</h3><p style="color:var(--ink-soft);">Before any physical visit or payment, use the Verify page to independently confirm a Property ID — don't rely only on screenshots sent to you.</p></div>
+      <div class="panel"><h3>Meet the professional, not just an agent</h3><p style="color:var(--ink-soft);">Verified properties list a named professional and firm. Ask to confirm you're dealing with them, or someone they've formally instructed.</p></div>
+      <div class="panel"><h3>Never pay before verifying</h3><p style="color:var(--ink-soft);">Do not pay agency fees, inspection fees, or caution deposits based on a listing alone — verification status can change, and documents can be forged.</p></div>
+      <div class="panel"><h3>Understand "Needs Review"</h3><p style="color:var(--ink-soft);">This status means something did not add up during verification. Treat it as a caution flag, not a minor delay.</p></div>
+      <div class="panel"><h3>Report anything suspicious</h3><p style="color:var(--ink-soft);">Duplicate listings, mismatched prices, and properties that don't seem to exist should be reported so they can be investigated.</p><a href="#/report" class="btn btn-outline btn-sm">Report a listing</a></div>
+    </div>
+    <div class="disclaimer" style="margin-top:20px;">VerifyProp's verification process reduces information risk but cannot eliminate it. It does not constitute legal advice, a title guarantee, or confirmation that a property is free of disputes or fraud.</div>
+  </div>`;
+}
+function pageAbout(){
+  return `
+  <div class="pagehead"><div class="container">
+    <div class="crumb"><a href="#/home">Home</a> / About</div>
+    <h1 style="font-size:1.9rem;">About VerifyProp</h1>
+  </div></div>
+  <div class="container" style="padding:28px 24px 60px; max-width:800px;">
+    <p style="color:var(--ink-soft); font-size:1.05rem;">VerifyProp is a centralised digital property listing and verification registry focused on Lagos Mainland. Our purpose is information transparency, not conventional real-estate marketing: every property carries a Property ID, a clearly defined verification status, and a public record of exactly what a licensed professional checked.</p>
+    <h3>What VerifyProp is not</h3>
+    <p style="color:var(--ink-soft);">VerifyProp does not claim to guarantee that a property is free from legal disputes, fraud, ownership claims, or future risk. Verification means that specified information and checks were reviewed according to our defined process — nothing more, and nothing less.</p>
+    <h3>Who we work with</h3>
+    <p style="color:var(--ink-soft);">Verification is carried out exclusively by registered Estate Surveyors/Valuers operating through accredited firms. Property owners cannot verify their own properties.</p>
+  </div>`;
+}
+function pageContact(){
+  return `
+  <div class="pagehead"><div class="container"><div class="crumb"><a href="#/home">Home</a> / Contact</div><h1 style="font-size:1.9rem;">Contact Us</h1></div></div>
+  <div class="container" style="padding:28px 24px 60px; max-width:640px;">
+    <div class="panel">
+      <div class="formgrid">
+        <div class="formfield"><label>Full name</label><input placeholder="Your name"></div>
+        <div class="formfield"><label>Email</label><input placeholder="you@example.com"></div>
+        <div class="formfield full"><label>Subject</label><input placeholder="What is this about?"></div>
+        <div class="formfield full"><label>Message</label><textarea rows="5" placeholder="Tell us more..."></textarea></div>
+      </div>
+      <button class="btn btn-primary" style="margin-top:14px;" onclick="alert('Message sent (demo only — no backend connected).')">Send message</button>
+    </div>
+  </div>`;
+}
+function pageReport(qp){
+  qp = qp || {};
+  return `
+  <div class="pagehead"><div class="container"><div class="crumb"><a href="#/home">Home</a> / Report a Listing</div><h1 style="font-size:1.9rem;">Report a Listing</h1><p style="color:var(--ink-soft);">All reports are reviewed by the Platform Administration team through a defined investigation workflow.</p></div></div>
+  <div class="container" style="padding:28px 24px 60px; max-width:640px;">
+    <div class="panel">
+      <div class="formgrid">
+        <div class="formfield full"><label>Property ID (if known)</label><input id="repPid" class="mono" value="${esc(qp.pid||'')}" placeholder="LAG-YAB-2026-00482"></div>
+        <div class="formfield full"><label>Reason</label>
+          <select id="repReason">
+            <option>False information</option><option>Duplicate listing</option><option>Property does not exist</option><option>Incorrect price</option><option>Suspicious ownership</option><option>Suspicious professional</option><option>Other</option>
+          </select>
+        </div>
+        <div class="formfield full"><label>Details</label><textarea id="repDetails" rows="5" placeholder="Describe what you noticed..."></textarea></div>
+      </div>
+      <button class="btn btn-primary" style="margin-top:14px;" onclick="submitReport()">Submit report</button>
+    </div>
+  </div>`;
+}
+function submitReport(){
+  const pid = document.getElementById('repPid').value.trim();
+  const reason = document.getElementById('repReason').value;
+  const details = document.getElementById('repDetails').value.trim();
+  STATE.reports.unshift({id:'RP'+(STATE.reports.length+1), propertyId:pid||'—', reason, details, status:'Investigating', date:new Date().toISOString().slice(0,10), reporter:STATE.role});
+  logAudit(STATE.role, 'Property flagged', 'Report', pid||'—', '—', 'Investigating');
+  save();
+  alert('Report submitted. Reference RP'+STATE.reports.length+'. Our administration team will investigate.');
+  go('#/home');
+}
+function pageLogin(){
+  return `
+  <div class="container" style="padding:60px 24px; max-width:440px;">
+    <h1 style="font-size:1.7rem;">Log in</h1>
+    <p class="sim-note">Demo only: choose the role you want to preview, this simulates a logged-in session.</p>
+    <div class="panel">
+      <div class="formfield" style="margin-bottom:12px;"><label>Email</label><input placeholder="you@example.com"></div>
+      <div class="formfield" style="margin-bottom:12px;"><label>Password</label><input type="password" placeholder="••••••••"></div>
+      <div class="formfield" style="margin-bottom:14px;"><label>Preview as role (demo)</label>
+        <select id="loginRole">${ROLES.filter(r=>r!=='Public Visitor').map(r=>`<option>${r}</option>`).join('')}</select>
+      </div>
+      <button class="btn btn-primary" style="width:100%; justify-content:center;" onclick="switchRole(document.getElementById('loginRole').value); go('#/home');">Log in</button>
+    </div>
+    <p class="sim-note">No account? <a href="#/register" class="link-btn">Register</a></p>
+  </div>`;
+}
+function pageRegister(){
+  return `
+  <div class="container" style="padding:60px 24px; max-width:520px;">
+    <h1 style="font-size:1.7rem;">Register</h1>
+    <p class="sim-note">Demo only: registration simulates account creation and assigns the selected role.</p>
+    <div class="panel">
+      <div class="formgrid">
+        <div class="formfield"><label>Full name</label><input placeholder="Your name"></div>
+        <div class="formfield"><label>Email</label><input placeholder="you@example.com"></div>
+        <div class="formfield full"><label>I am registering as</label>
+          <select id="regRole">
+            <option>Property Seeker</option><option>Property Owner</option><option>Estate Surveyor/Valuer</option><option>Firm Administrator</option>
+          </select>
+        </div>
+        <div class="formfield full"><label>Password</label><input type="password" placeholder="••••••••"></div>
+      </div>
+      <p class="sim-note" style="margin-top:10px;">Professional and firm accounts require accreditation review before verification permissions are activated (simulated here as immediate for demo purposes).</p>
+      <button class="btn btn-primary" style="width:100%; justify-content:center; margin-top:10px;" onclick="switchRole(document.getElementById('regRole').value); go('#/home');">Create account</button>
+    </div>
+  </div>`;
+}
+
+/* =========================================================================
+   PAGE: PROPERTY OWNER DASHBOARD (submit + track)
+   ========================================================================= */
+function pageOwnerDashboard(){
+  const gate = requireRole('dashboard', ['Property Owner']); if(gate) return gate;
+  const mine = STATE.properties.slice(0,4); // demo: pretend these belong to the signed-in owner
+  return `
+  <div class="pagehead"><div class="container"><div class="crumb">My Properties</div><h1 style="font-size:1.7rem;">My Properties</h1><p style="color:var(--ink-soft);">Track verification status for properties you've submitted. You cannot verify your own property — only a registered professional can.</p></div></div>
+  <div class="container" style="padding:24px 24px 60px;">
+    <div style="display:flex; justify-content:flex-end; margin-bottom:14px;"><button class="btn btn-primary" onclick="toggleSubmitForm()">+ Submit a property</button></div>
+    <div id="submitFormWrap" style="display:none; margin-bottom:20px;"></div>
+    <table class="data"><thead><tr><th>Property ID</th><th>Title</th><th>Status</th><th>Checks</th><th></th></tr></thead><tbody>
+      ${mine.map(p=>`<tr><td class="mono">${p.propertyId}</td><td>${p.title}</td><td><span class="status-tag ${statusClass(p.status)}">${p.status}</span></td><td>${checksCompleted(p)}/${CHECK_DEFS.length}</td><td><a href="#/property/${p.id}" class="btn btn-outline btn-sm">View</a></td></tr>`).join('')}
+    </tbody></table>
+  </div>`;
+}
+function toggleSubmitForm(){
+  const el = document.getElementById('submitFormWrap');
+  if(el.style.display==='none'){
+    el.style.display='block';
+    el.innerHTML = `<div class="panel">
+      <h3>Submit a new property</h3>
+      <div class="formgrid">
+        <div class="formfield full"><label>Title</label><input id="npTitle" placeholder="e.g. 2-Bedroom Flat, Bariga"></div>
+        <div class="formfield"><label>Area</label><select id="npArea">${Object.keys(AREA_CODES).map(a=>`<option>${a}</option>`).join('')}</select></div>
+        <div class="formfield"><label>Property type</label><select id="npType"><option>Flat/Apartment</option><option>Terrace House</option><option>Detached Duplex</option><option>Bungalow</option><option>Commercial</option><option>Self-Contain</option></select></div>
+        <div class="formfield"><label>Buy / Rent</label><select id="npPurpose"><option>Rent</option><option>Buy</option></select></div>
+        <div class="formfield"><label>Price (₦)</label><input id="npPrice" type="number" placeholder="1500000"></div>
+        <div class="formfield"><label>Bedrooms</label><input id="npBed" type="number" placeholder="2"></div>
+        <div class="formfield"><label>Bathrooms</label><input id="npBath" type="number" placeholder="2"></div>
+        <div class="formfield full"><label>Address</label><input id="npAddr" placeholder="Street address"></div>
+        <div class="formfield full"><label>Description</label><textarea id="npDesc" rows="3" placeholder="Describe the property"></textarea></div>
+      </div>
+      <button class="btn btn-primary" style="margin-top:12px;" onclick="submitNewProperty()">Submit &amp; get Property ID</button>
+    </div>`;
+  } else { el.style.display='none'; }
+}
+function submitNewProperty(){
+  const area = document.getElementById('npArea').value;
+  const pid = nextPropertyId(area);
+  const np = {
+    id:'PR'+(STATE.properties.length+1), propertyId:pid,
+    title:document.getElementById('npTitle').value || 'Untitled property', type:document.getElementById('npType').value,
+    purpose:document.getElementById('npPurpose').value, area, address:document.getElementById('npAddr').value||area,
+    lat:6.5,lng:3.37, price:Number(document.getElementById('npPrice').value)||0, priceUnit: document.getElementById('npPurpose').value==='Rent'?'/year':'',
+    bedrooms:Number(document.getElementById('npBed').value)||0, bathrooms:Number(document.getElementById('npBath').value)||0,
+    size:'—', availability:'Available now', description:document.getElementById('npDesc').value||'No description provided.',
+    status:'Unverified', verificationId:null, verificationDate:null, professionalId:null, firmId:null,
+    checks: Object.fromEntries(CHECK_DEFS.map(c=>[c.key,{completed:false,note:'',date:null}])),
+    owner:'Current session owner', history:[{date:new Date().toISOString().slice(0,10), event:'Property submitted by owner'},{date:new Date().toISOString().slice(0,10), event:'Property ID issued: '+pid}]
+  };
+  STATE.properties.unshift(np);
+  logAudit(STATE.role, 'Property created', 'Property', pid, '—', 'Unverified');
+  save();
+  alert('Property submitted. Your Property ID is '+pid+'. It now awaits a verification request from a registered professional.');
+  go('#/property/'+np.id);
+}
+
+/* =========================================================================
+   PAGE: PROFESSIONAL DASHBOARD (verification workflow lives here)
+   ========================================================================= */
+let PRO_SECTION = 'overview';
+let WIZ_PROPERTY = null;
+let WIZ_STEP = 1;
+
+function pageProDashboard(){
+  const gate = requireRole('dashboard', ['Estate Surveyor/Valuer']); if(gate) return gate;
+  const mine = STATE.properties.filter(p=>p.professionalId==='P1' || !p.professionalId && false);
+  const pending = STATE.properties.filter(p=>p.status==='Verification in Progress' || p.status==='Unverified' || p.status==='Needs Review');
+  const done = STATE.properties.filter(p=>p.status==='Verified');
+  const sections = ['overview','My Properties','Verification Requests','Verification Checklist','Verification History','Duplicate Listings','Reports','Certificates','Notifications','Profile'];
+  return `<div class="container" style="padding:24px;">
+    <h1 style="font-size:1.6rem; margin-bottom:16px;">Professional Portal — Tunde Adisa</h1>
+    <div class="dash-shell">
+      <div class="dash-side">
+        ${sections.map(s=>`<button class="${PRO_SECTION===s?'active':''}" onclick="setProSection('${s}')">${s==='overview'?'Overview':s}</button>`).join('')}
+      </div>
+      <div class="dash-main" id="proMain">${renderProSection(pending,done)}</div>
+    </div>
+  </div>`;
+}
+function setProSection(s){ PRO_SECTION = s; WIZ_PROPERTY = null; render(); }
+function renderProSection(pending, done){
+  switch(PRO_SECTION){
+    case 'overview': return `
+      <div class="metric-row" style="margin-bottom:24px;">
+        <div class="metric"><div class="num">${STATE.properties.length}</div><div class="lab">Assigned properties</div></div>
+        <div class="metric"><div class="num">${pending.length}</div><div class="lab">Pending verification</div></div>
+        <div class="metric"><div class="num">${done.length}</div><div class="lab">Verified</div></div>
+        <div class="metric"><div class="num">${STATE.duplicateFlags.length}</div><div class="lab">Duplicate flags</div></div>
+      </div>
+      <h3>Recent notifications</h3>
+      ${STATE.notifications.map(n=>`<div class="hist-item"><div class="date">${n.ts}</div>${n.text}</div>`).join('')}
+    `;
+    case 'Verification Requests': return `
+      <h3>Verification Requests</h3>
+      <p style="color:var(--ink-soft); font-size:14px;">Open a property to work through its checklist. A property becomes "Verified" only once all mandatory checks and the professional review are complete.</p>
+      <table class="data"><thead><tr><th>Property ID</th><th>Title</th><th>Status</th><th>Progress</th><th></th></tr></thead><tbody>
+      ${pending.map(p=>`<tr><td class="mono">${p.propertyId}</td><td>${p.title}</td><td><span class="status-tag ${statusClass(p.status)}">${p.status}</span></td><td>${checksCompleted(p)}/${CHECK_DEFS.length}</td><td><button class="btn btn-outline btn-sm" onclick="openWizard('${p.id}')">Open workflow</button></td></tr>`).join('')}
+      </tbody></table>
+      ${WIZ_PROPERTY ? renderWizard() : ''}
+    `;
+    case 'Verification Checklist': return `<h3>Verification Checklist reference</h3><p style="color:var(--ink-soft); font-size:14px;">The 10 mandatory checks applied to every property, mapped to workflow steps.</p>
+      ${CHECK_DEFS.map(c=>`<div class="checklist-item"><div class="check-dot pending" style="border-style:solid;">${c.step}</div><div><div style="font-weight:600;">${c.label}</div><div style="font-size:12.5px; color:var(--ink-faint);">${c.desc} — Step ${c.step}: ${STEP_LABELS[c.step-1]}</div></div></div>`).join('')}`;
+    case 'My Properties':
+    case 'Verification History': return `<h3>${PRO_SECTION}</h3><table class="data"><thead><tr><th>Property ID</th><th>Title</th><th>Status</th><th>Date</th></tr></thead><tbody>
+      ${STATE.properties.filter(p=>p.professionalId).map(p=>`<tr><td class="mono">${p.propertyId}</td><td><a href="#/property/${p.id}" class="link-btn">${p.title}</a></td><td><span class="status-tag ${statusClass(p.status)}">${p.status}</span></td><td>${p.verificationDate||'—'}</td></tr>`).join('')}
+      </tbody></table>`;
+    case 'Duplicate Listings': return `<h3>Duplicate Listings</h3>${STATE.duplicateFlags.map(d=>`<div class="panel"><span class="badge-mini">${d.status}</span><p style="margin:8px 0;"><strong>${d.propertyIds.join(' vs ')}</strong></p><p style="color:var(--ink-soft); font-size:14px;">${d.reason}</p><p class="sim-note">Raised ${d.raised}. Duplicate listings are never auto-deleted — they are routed for administrative review.</p></div>`).join('') || '<p>No duplicate flags.</p>'}`;
+    case 'Reports': return `<h3>Reports involving your listings</h3><table class="data"><thead><tr><th>Property ID</th><th>Reason</th><th>Status</th><th>Date</th></tr></thead><tbody>${STATE.reports.map(r=>`<tr><td class="mono">${r.propertyId}</td><td>${r.reason}</td><td>${r.status}</td><td>${r.date}</td></tr>`).join('')}</tbody></table>`;
+    case 'Certificates': return `<h3>Verification Certificates</h3><table class="data"><thead><tr><th>Property ID</th><th>Verification ID</th><th>Date</th><th></th></tr></thead><tbody>${done.map(p=>`<tr><td class="mono">${p.propertyId}</td><td class="mono">${p.verificationId}</td><td>${p.verificationDate}</td><td><a href="#/certificate/${p.id}" class="btn btn-outline btn-sm">View</a></td></tr>`).join('')}</tbody></table>`;
+    case 'Notifications': return `<h3>Notifications</h3>${STATE.notifications.map(n=>`<div class="hist-item"><div class="date">${n.ts}</div>${n.text}</div>`).join('')}`;
+    case 'Profile': return `<h3>Profile</h3><div class="panel"><div><div class="badge-mini">NAME</div><div style="margin:4px 0 10px;">Tunde Adisa</div></div><div><div class="badge-mini">LICENSE</div><div class="mono" style="margin:4px 0 10px;">ESV/2014/00871</div></div><div><div class="badge-mini">FIRM</div><div style="margin:4px 0;">Ashcroft &amp; Doyin Surveyors</div></div></div>`;
+    default: return '';
+  }
+}
+function openWizard(pid){ WIZ_PROPERTY = pid; WIZ_STEP = 1; render(); setTimeout(()=>document.getElementById('wizAnchor')?.scrollIntoView({behavior:'smooth'}),50); }
+function renderWizard(){
+  const p = STATE.properties.find(x=>x.id===WIZ_PROPERTY);
+  if(!p) return '';
+  const done = checksCompleted(p);
+  const mandatoryDone = done === CHECK_DEFS.length;
+  const stepChecks = CHECK_DEFS.filter(c=>c.step===WIZ_STEP);
+  return `<div id="wizAnchor" class="panel" style="border-color:var(--ink);">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+      <div><h3 style="margin-bottom:2px;">Verification workflow — ${p.propertyId}</h3><p style="color:var(--ink-soft); margin:0; font-size:13.5px;">${p.title}</p></div>
+      <span class="badge-mini">${done} of ${CHECK_DEFS.length} checks completed</span>
+    </div>
+    <div class="progress-track" style="margin:14px 0;"><div class="progress-fill" style="width:${done/CHECK_DEFS.length*100}%;"></div></div>
+    <div class="wizard-steps">
+      ${STEP_LABELS.map((s,i)=>`<span class="${i+1<WIZ_STEP?'wdone':(i+1===WIZ_STEP?'wcur':'')}" onclick="WIZ_STEP=${i+1};render();" style="cursor:pointer;">${i+1}. ${s}</span>`).join('')}
+    </div>
+
+    ${WIZ_STEP<=6 ? `
+      <h4 style="font-size:.95rem;">Step ${WIZ_STEP}: ${STEP_LABELS[WIZ_STEP-1]}</h4>
+      ${stepChecks.length ? stepChecks.map(c=>{
+        const on = p.checks[c.key].completed;
+        return `<div class="toggle-row ${on?'on':''}">
+          <div><div style="font-weight:600; font-size:14px;">${c.label}</div><div style="font-size:12px; color:var(--ink-faint);">${c.desc}</div></div>
+          <button class="switch ${on?'on':''}" onclick="toggleCheck('${p.id}','${c.key}')"></button>
+        </div>`;
+      }).join('') : `<p class="sim-note">Property Identity is auto-recorded when the Property ID was issued.</p>`}
+      <div style="display:flex; justify-content:space-between; margin-top:16px;">
+        <button class="btn btn-outline btn-sm" ${WIZ_STEP===1?'disabled':''} onclick="WIZ_STEP=${WIZ_STEP-1};render();">← Back</button>
+        <button class="btn btn-primary btn-sm" onclick="WIZ_STEP=${WIZ_STEP+1};render();">Next step →</button>
+      </div>
+    ` : ''}
+
+    ${WIZ_STEP===7 ? `
+      <h4 style="font-size:.95rem;">Step 7: Professional Review</h4>
+      ${mandatoryDone ? `<div class="alert alert-ok">All 10 mandatory checks are complete. Confirm your professional review below to proceed.</div>` : `<div class="alert alert-warn">${done} of ${CHECK_DEFS.length} checks completed. All mandatory checks must be complete before professional review can be confirmed.</div>`}
+      <label style="display:flex; gap:10px; align-items:flex-start; font-size:14px; margin:12px 0;">
+        <input type="checkbox" id="reviewConfirm" ${!mandatoryDone?'disabled':''} style="margin-top:3px;">
+        I confirm I have personally reviewed all completed checks for ${p.propertyId} and they are accurate to the best of my professional judgement.
+      </label>
+      <div style="display:flex; justify-content:space-between;">
+        <button class="btn btn-outline btn-sm" onclick="WIZ_STEP=6;render();">← Back</button>
+        <button class="btn btn-primary btn-sm" ${!mandatoryDone?'disabled':''} onclick="confirmReview('${p.id}')">Confirm review →</button>
+      </div>
+    ` : ''}
+
+    ${WIZ_STEP===8 ? `
+      <h4 style="font-size:.95rem;">Step 8: Verification Record</h4>
+      ${p.verificationId ? `
+        <div class="alert alert-ok">Verification Record ${p.verificationId} created for ${p.propertyId}.</div>
+        <div class="grid grid-2">
+          <div><div class="badge-mini">VERIFICATION ID</div><div class="mono" style="margin-top:4px;">${p.verificationId}</div></div>
+          <div><div class="badge-mini">DATE</div><div style="margin-top:4px;">${p.verificationDate}</div></div>
+        </div>
+        <button class="btn btn-primary btn-sm" style="margin-top:14px;" onclick="WIZ_STEP=9;render();">Continue to certificate →</button>
+      ` : `<p class="sim-note">Complete the professional review in Step 7 first.</p><button class="btn btn-outline btn-sm" onclick="WIZ_STEP=7;render();">← Back</button>`}
+    ` : ''}
+
+    ${WIZ_STEP===9 ? `
+      <h4 style="font-size:.95rem;">Step 9: Verification Certificate</h4>
+      ${p.status==='Verified' ? `
+        <div class="alert alert-ok">Certificate issued with QR code for public verification.</div>
+        <a href="#/certificate/${p.id}" class="btn btn-primary btn-sm">View certificate</a>
+      ` : `<p class="sim-note">Certificate becomes available once the verification record is created in Step 8.</p>`}
+    ` : ''}
+
+    <div style="margin-top:18px; padding-top:14px; border-top:1px solid var(--line); display:flex; justify-content:space-between; align-items:center;">
+      <button class="btn btn-outline btn-sm" onclick="rejectProperty('${p.id}')">Reject verification</button>
+      <button class="btn btn-outline btn-sm" onclick="flagForReview('${p.id}')">Flag: Needs Review</button>
+    </div>
+  </div>`;
+}
+function toggleCheck(pid, key){
+  const p = STATE.properties.find(x=>x.id===pid);
+  const wasOn = p.checks[key].completed;
+  p.checks[key].completed = !wasOn;
+  p.checks[key].date = !wasOn ? new Date().toISOString().slice(0,10) : null;
+  if(!wasOn){
+    p.history.push({date:new Date().toISOString().slice(0,10), event:'Check completed: '+CHECK_DEFS.find(c=>c.key===key).label});
+    logAudit(STATE.role,'Verification check completed','VerificationCheck', p.propertyId+' / '+key, 'Incomplete','Complete');
+  }
+  if(p.status==='Unverified') p.status='Verification in Progress';
+  save(); render();
+}
+function confirmReview(pid){
+  const box = document.getElementById('reviewConfirm');
+  if(!box || !box.checked){ alert('Please tick the confirmation before proceeding.'); return; }
+  WIZ_STEP = 8; render();
+  setTimeout(()=>{
+    const p = STATE.properties.find(x=>x.id===pid);
+    if(!p.verificationId){
+      p.verificationId = nextVerificationId();
+      p.verificationDate = new Date().toISOString().slice(0,10);
+      p.status = 'Verified';
+      p.history.push({date:p.verificationDate, event:'Verification approved — certificate issued'});
+      logAudit(STATE.role,'Verification approved','VerificationRecord', p.propertyId, 'Verification in Progress','Verified');
+      save(); render();
+    }
+  }, 250);
+}
+function rejectProperty(pid){
+  const p = STATE.properties.find(x=>x.id===pid);
+  const reason = prompt('Reason for rejecting this verification:','Instructing party could not establish authority to market.');
+  if(reason===null) return;
+  p.status='Rejected';
+  p.history.push({date:new Date().toISOString().slice(0,10), event:'Verification rejected — '+reason});
+  logAudit(STATE.role,'Verification rejected','VerificationRecord', p.propertyId, 'Verification in Progress','Rejected');
+  save(); WIZ_PROPERTY=null; render();
+}
+function flagForReview(pid){
+  const p = STATE.properties.find(x=>x.id===pid);
+  p.status='Needs Review';
+  p.history.push({date:new Date().toISOString().slice(0,10), event:'Flagged for regulatory review'});
+  logAudit(STATE.role,'Property flagged','Property', p.propertyId, 'Verification in Progress','Needs Review');
+  save(); WIZ_PROPERTY=null; render();
+}
+
+/* =========================================================================
+   PAGE: FIRM DASHBOARD
+   ========================================================================= */
+function pageFirmDashboard(){
+  const gate = requireRole('dashboard', ['Firm Administrator']); if(gate) return gate;
+  const firm = STATE.firms[0];
+  const staff = STATE.professionals.filter(p=>p.firmId===firm.id);
+  return `<div class="container" style="padding:24px;">
+    <h1 style="font-size:1.6rem;">${firm.name} — Firm Dashboard</h1>
+    <div class="metric-row" style="margin:16px 0 24px;">
+      <div class="metric"><div class="num">${staff.length}</div><div class="lab">Registered staff</div></div>
+      <div class="metric"><div class="num">${STATE.properties.filter(p=>p.firmId===firm.id).length}</div><div class="lab">Properties handled</div></div>
+      <div class="metric"><div class="num">${STATE.properties.filter(p=>p.firmId===firm.id && p.status==='Verified').length}</div><div class="lab">Verified</div></div>
+    </div>
+    <div class="panel"><h3>Staff</h3><table class="data"><thead><tr><th>Name</th><th>License</th><th>Specialty</th><th>Verifications</th></tr></thead><tbody>
+      ${staff.map(p=>`<tr><td>${p.name}</td><td class="mono">${p.licenseNo}</td><td>${p.specialty}</td><td>${p.verifiedCount}</td></tr>`).join('')}
+    </tbody></table></div>
+    <div class="panel"><h3>Firm profile</h3><div class="badge-mini">REG NO</div><div class="mono" style="margin:4px 0 10px;">${firm.regNo}</div><div class="badge-mini">ADDRESS</div><div style="margin:4px 0;">${firm.address}</div></div>
+  </div>`;
+}
+
+/* =========================================================================
+   PAGE: REGULATORY REVIEWER
+   ========================================================================= */
+function pageRegulatory(){
+  const gate = requireRole('dashboard', ['Regulatory Reviewer']); if(gate) return gate;
+  const review = STATE.properties.filter(p=>p.status==='Needs Review');
+  return `<div class="container" style="padding:24px;">
+    <h1 style="font-size:1.6rem;">Regulatory Review</h1>
+    <p style="color:var(--ink-soft);">Read-only oversight of properties flagged for review, verification records, and audit history.</p>
+    <div class="panel"><h3>Properties needing review</h3><table class="data"><thead><tr><th>Property ID</th><th>Title</th><th>Flagged reason</th></tr></thead><tbody>
+      ${review.map(p=>`<tr><td class="mono">${p.propertyId}</td><td><a href="#/property/${p.id}" class="link-btn">${p.title}</a></td><td>${p.history[p.history.length-1].event}</td></tr>`).join('') || '<tr><td colspan="3">No properties currently need review.</td></tr>'}
+    </tbody></table></div>
+    <div class="panel"><h3>Audit trail (latest)</h3>${auditTable(8)}</div>
+  </div>`;
+}
+
+/* =========================================================================
+   PAGE: PLATFORM ADMIN
+   ========================================================================= */
+let ADMIN_SECTION = 'overview';
+function pageAdmin(){
+  const gate = requireRole('dashboard', ['Platform Administrator']); if(gate) return gate;
+  const sections = ['overview','Users','Professionals','Firms','Properties','Verification Requests','Verification Records','Duplicate Listings','Reports','Verification Rules','Audit Logs','Analytics','Platform Settings'];
+  return `<div class="container" style="padding:24px;">
+    <h1 style="font-size:1.6rem; margin-bottom:16px;">Platform Administration</h1>
+    <div class="dash-shell">
+      <div class="dash-side">${sections.map(s=>`<button class="${ADMIN_SECTION===s?'active':''}" onclick="setAdminSection('${s}')">${s==='overview'?'Overview':s}</button>`).join('')}</div>
+      <div class="dash-main">${renderAdminSection()}</div>
+    </div>
+  </div>`;
+}
+function setAdminSection(s){ ADMIN_SECTION=s; render(); }
+function auditTable(limit){
+  const rows = STATE.auditLogs.slice(0, limit||STATE.auditLogs.length);
+  return `<table class="data"><thead><tr><th>Time</th><th>User</th><th>Action</th><th>Entity</th><th>Prev → New</th></tr></thead><tbody>
+    ${rows.map(a=>`<tr><td class="mono">${a.ts}</td><td>${a.user}</td><td>${a.action}</td><td class="mono">${a.entityId}</td><td>${a.prev} → ${a.next}</td></tr>`).join('')}
+  </tbody></table>`;
+}
+function renderAdminSection(){
+  const props = STATE.properties;
+  const byStatus = s=>props.filter(p=>p.status===s).length;
+  switch(ADMIN_SECTION){
+    case 'overview': return `
+      <div class="metric-row">
+        <div class="metric"><div class="num">${props.length}</div><div class="lab">Total Properties</div></div>
+        <div class="metric"><div class="num">${byStatus('Verified')}</div><div class="lab">Verified</div></div>
+        <div class="metric"><div class="num">${byStatus('Verification in Progress')}</div><div class="lab">Pending Verification</div></div>
+        <div class="metric"><div class="num">${byStatus('Unverified')}</div><div class="lab">Unverified</div></div>
+        <div class="metric"><div class="num">${byStatus('Expired')}</div><div class="lab">Expired</div></div>
+        <div class="metric"><div class="num">${STATE.reports.length}</div><div class="lab">Reported Listings</div></div>
+      </div>
+      <div class="panel" style="margin-top:20px;"><h3>Recent audit activity</h3>${auditTable(6)}</div>
+    `;
+    case 'Users': return `<h3>Users</h3><table class="data"><thead><tr><th>Name</th><th>Role</th></tr></thead><tbody>${STATE.users.map(u=>`<tr><td>${u.name}</td><td>${u.role}</td></tr>`).join('')}</tbody></table>`;
+    case 'Professionals': return `<h3>Professionals</h3><table class="data"><thead><tr><th>Name</th><th>Firm</th><th>License</th><th>Verifications</th></tr></thead><tbody>${STATE.professionals.map(p=>`<tr><td>${p.name}</td><td>${firmName(p.firmId)}</td><td class="mono">${p.licenseNo}</td><td>${p.verifiedCount}</td></tr>`).join('')}</tbody></table>`;
+    case 'Firms': return `<h3>Firms</h3><table class="data"><thead><tr><th>Firm</th><th>Reg. No</th><th>Address</th></tr></thead><tbody>${STATE.firms.map(f=>`<tr><td>${f.name}</td><td class="mono">${f.regNo}</td><td>${f.address}</td></tr>`).join('')}</tbody></table>`;
+    case 'Properties': return `<h3>All Properties</h3><table class="data"><thead><tr><th>Property ID</th><th>Title</th><th>Area</th><th>Status</th></tr></thead><tbody>${props.map(p=>`<tr><td class="mono">${p.propertyId}</td><td><a href="#/property/${p.id}" class="link-btn">${p.title}</a></td><td>${p.area}</td><td><span class="status-tag ${statusClass(p.status)}">${p.status}</span></td></tr>`).join('')}</tbody></table>`;
+    case 'Verification Requests': return `<h3>Verification Requests</h3><table class="data"><thead><tr><th>Property ID</th><th>Assigned to</th><th>Progress</th></tr></thead><tbody>${props.filter(p=>p.status==='Verification in Progress'||p.status==='Unverified').map(p=>`<tr><td class="mono">${p.propertyId}</td><td>${p.professionalId?profById(p.professionalId).name:'Unassigned'}</td><td>${checksCompleted(p)}/${CHECK_DEFS.length}</td></tr>`).join('')}</tbody></table>`;
+    case 'Verification Records': return `<h3>Verification Records</h3><table class="data"><thead><tr><th>Verification ID</th><th>Property ID</th><th>Professional</th><th>Date</th></tr></thead><tbody>${props.filter(p=>p.verificationId).map(p=>`<tr><td class="mono">${p.verificationId}</td><td class="mono">${p.propertyId}</td><td>${profById(p.professionalId).name}</td><td>${p.verificationDate}</td></tr>`).join('')}</tbody></table>`;
+    case 'Duplicate Listings': return `<h3>Duplicate Listings</h3>${STATE.duplicateFlags.map(d=>`<div class="panel"><span class="badge-mini">${d.status}</span><p><strong>${d.propertyIds.join(' vs ')}</strong></p><p style="color:var(--ink-soft);">${d.reason}</p><div style="display:flex; gap:8px;"><button class="btn btn-outline btn-sm" onclick="resolveDuplicate('${d.id}','Confirmed duplicate')">Mark confirmed duplicate</button><button class="btn btn-outline btn-sm" onclick="resolveDuplicate('${d.id}','Not a duplicate')">Dismiss</button></div></div>`).join('') || '<p>No duplicate flags.</p>'}`;
+    case 'Reports': return `<h3>Reports</h3><table class="data"><thead><tr><th>Property ID</th><th>Reason</th><th>Status</th><th>Date</th></tr></thead><tbody>${STATE.reports.map(r=>`<tr><td class="mono">${r.propertyId}</td><td>${r.reason}</td><td>${r.status}</td><td>${r.date}</td></tr>`).join('')}</tbody></table>`;
+    case 'Verification Rules': return `<h3>Verification Rules</h3><p style="color:var(--ink-soft);">The 10 mandatory checks required before a property can become Verified. Editable here by Platform Administrators in the full system.</p>${CHECK_DEFS.map(c=>`<div class="checklist-item"><div class="check-dot pending" style="border-style:solid;">${c.step}</div><div style="font-weight:600;">${c.label}</div></div>`).join('')}`;
+    case 'Audit Logs': return `<h3>Audit Logs</h3>${auditTable()}`;
+    case 'Analytics': return `<h3>Analytics</h3><div class="metric-row"><div class="metric"><div class="num">${Math.round(byStatus('Verified')/props.length*100)}%</div><div class="lab">Verification rate</div></div><div class="metric"><div class="num">${STATE.reports.length}</div><div class="lab">Total reports</div></div><div class="metric"><div class="num">${STATE.duplicateFlags.length}</div><div class="lab">Duplicate flags</div></div></div>`;
+    case 'Platform Settings': return `<h3>Platform Settings</h3><div class="panel"><div class="formfield" style="margin-bottom:12px;"><label>Verification validity period (months)</label><input value="12"></div><div class="formfield"><label>Mandatory checks required to verify</label><input value="10" disabled></div></div>`;
+    default: return '';
+  }
+}
+function resolveDuplicate(id, outcome){
+  const d = STATE.duplicateFlags.find(x=>x.id===id);
+  d.status = outcome;
+  logAudit(STATE.role,'Property flagged','DuplicateFlag', id, 'Under review', outcome);
+  save(); render();
+}
+
+/* =========================================================================
+   ROUTER
+   ========================================================================= */
+function parseHash(){
+  let h = location.hash || '#/home';
+  h = h.slice(1); // drop '#'
+  const [path, qs] = h.split('?');
+  const parts = path.split('/').filter(Boolean);
+  const qp = {};
+  if(qs) qs.split('&').forEach(kv=>{ const [k,v]=kv.split('='); qp[k]=decodeURIComponent(v||''); });
+  return {parts, qp};
+}
+function switchRole(role){ STATE.role = role; save(); render(); }
+
+function render(){
+  const {parts, qp} = parseHash();
+  const r = parts[0] || 'home';
+  let routeName = r, html = '';
+  if(r==='home') html = pageHome();
+  else if(r==='search') html = pageSearch(qp);
+  else if(r==='property') html = pagePropertyDetail(parts[1]);
+  else if(r==='verify') html = pageVerify(qp);
+  else if(r==='certificate') html = pageCertificate(parts[1]);
+  else if(r==='professionals') html = pageProfessionals();
+  else if(r==='professional') html = pageProfessionalProfile(parts[1]);
+  else if(r==='how-it-works') html = pageHowItWorks();
+  else if(r==='safety') html = pageSafety();
+  else if(r==='about') html = pageAbout();
+  else if(r==='contact') html = pageContact();
+  else if(r==='report') html = pageReport(qp);
+  else if(r==='login') html = pageLogin();
+  else if(r==='register') html = pageRegister();
+  else if(r==='owner-dashboard') html = pageOwnerDashboard();
+  else if(r==='pro-dashboard') html = pageProDashboard();
+  else if(r==='firm-dashboard') html = pageFirmDashboard();
+  else if(r==='regulatory') html = pageRegulatory();
+  else if(r==='admin') html = pageAdmin();
+  else { routeName='home'; html = pageHome(); }
+
+  document.getElementById('app').innerHTML = layout(routeName, html);
+  window.scrollTo(0,0);
+}
+window.addEventListener('hashchange', render);
+window.switchRole = switchRole;
+window.go = go;
+window.resetDemo = resetDemo;
+window.toggleSubmitForm = toggleSubmitForm;
+window.submitNewProperty = submitNewProperty;
+window.submitReport = submitReport;
+window.setProSection = setProSection;
+window.openWizard = openWizard;
+window.toggleCheck = toggleCheck;
+window.confirmReview = confirmReview;
+window.rejectProperty = rejectProperty;
+window.flagForReview = flagForReview;
+window.setAdminSection = setAdminSection;
+window.resolveDuplicate = resolveDuplicate;
+render();
+</script>
+</body>
+</html>
+
