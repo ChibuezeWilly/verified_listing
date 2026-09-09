@@ -72,16 +72,43 @@ select#roleSwitch{border:1px solid var(--line-strong); background:var(--paper-al
 .btn-green:hover{background:#175f3c;}
 .btn-sm{padding:6px 11px; font-size:12.5px;}
 .btn:disabled{opacity:.4; cursor:not-allowed;}
-.hamburger{display:none;}
+.hamburger{display:none; align-items:center; justify-content:center; font-size:1.25rem; line-height:1; width:42px; height:38px; padding:0;}
+.mobile-menu,.mobile-menu-backdrop{display:none;}
 @media(max-width:980px){
+  nav.mainnav .container{padding:11px 18px;}
+  .navright{gap:8px;}
+  .navright #roleSwitch,.navright > a{display:none;}
   .navlinks{display:none;}
-  .hamburger{display:block; background:none; border:1px solid var(--line-strong); border-radius:3px; padding:7px 10px;}
+  .hamburger{display:inline-flex; background:none; border:1px solid var(--line-strong); border-radius:3px;}
+  .mobile-menu-backdrop{position:fixed; inset:0; display:block; background:rgba(19,32,57,.42); opacity:0; pointer-events:none; transition:opacity .2s ease; z-index:49;}
+  .mobile-menu{display:flex; flex-direction:column; position:fixed; z-index:50; top:0; right:0; bottom:0; width:min(88vw,360px); padding:18px 20px 24px; background:var(--panel); box-shadow:-10px 0 30px rgba(19,32,57,.16); transform:translateX(100%); transition:transform .22s ease; overflow-y:auto;}
+  body.menu-open{overflow:hidden;}
+  body.menu-open .mobile-menu{transform:translateX(0);}
+  body.menu-open .mobile-menu-backdrop{opacity:1; pointer-events:auto;}
+  .mobile-menu-head{display:flex; align-items:center; justify-content:space-between; padding-bottom:18px; border-bottom:1px solid var(--line);}
+  .mobile-menu-close{width:36px; height:36px; border:1px solid var(--line-strong); border-radius:3px; background:var(--paper-alt); color:var(--ink); font-size:1.35rem; line-height:1;}
+  .mobile-menu-links{display:flex; flex-direction:column; padding:14px 0; border-bottom:1px solid var(--line);}
+  .mobile-menu-links a{padding:11px 0; color:var(--ink-soft); font-weight:500; border-bottom:1px solid var(--line);}
+  .mobile-menu-links a:last-child{border-bottom:0;}
+  .mobile-menu-links a.active{color:var(--green); font-weight:700;}
+  .mobile-menu-utility{display:flex; flex-wrap:wrap; gap:12px 20px; padding:16px 0; font-size:13px; color:var(--ink-soft); border-bottom:1px solid var(--line);}
+  .mobile-menu-account{display:flex; flex-direction:column; gap:10px; padding-top:18px;}
+  .mobile-menu-account #mobileRoleSwitch{width:100%; padding:10px;}
+  .mobile-menu-account .btn{justify-content:center; width:100%;}
 }
 
 /* ---------- Hero / sections ---------- */
 .hero{padding:56px 0 40px; border-bottom:1px solid var(--line);}
 .hero-grid{display:grid; grid-template-columns:1.1fr .9fr; gap:48px; align-items:center;}
+.hero-grid > *{min-width:0;}
+.hero h1,.hero .lede{overflow-wrap:break-word;}
 @media(max-width:900px){.hero-grid{grid-template-columns:1fr;}}
+@media(max-width:640px){
+  .container{padding-left:18px; padding-right:18px;}
+  .hero{padding:38px 0 30px;}
+  .hero h1{font-size:clamp(1.85rem,9vw,2.5rem);}
+  .hero .lede{font-size:1rem;}
+}
 .eyebrow-tag{display:inline-flex; align-items:center; gap:8px; font-size:12.5px; font-weight:600; color:var(--green); border:1px solid var(--green); border-radius:3px; padding:4px 10px; margin-bottom:18px;}
 .lede{font-size:1.08rem; color:var(--ink-soft); max-width:52ch;}
 .hero-actions{display:flex; gap:12px; margin-top:22px; flex-wrap:wrap;}
@@ -430,9 +457,35 @@ function layout(routeName, contentHtml){
         ${ROLES.map(r=>`<option value="${r}" ${STATE.role===r?'selected':''}>${r}</option>`).join('')}
       </select>
       ${dashLinkForRole()}
-      <button class="btn btn-outline btn-sm hamburger" onclick="go('#/search')">☰</button>
+      <button class="btn btn-outline btn-sm hamburger" onclick="toggleMobileMenu(true)" aria-label="Open navigation menu" aria-controls="mobileMenu" aria-expanded="false">☰</button>
     </div>
   </div></nav>
+  <div class="mobile-menu-backdrop" onclick="toggleMobileMenu(false)"></div>
+  <aside class="mobile-menu" id="mobileMenu" aria-label="Mobile navigation">
+    <div class="mobile-menu-head">
+      <a href="#/home" class="brand" onclick="toggleMobileMenu(false)"><span class="mark"></span>VerifyProp</a>
+      <button class="mobile-menu-close" onclick="toggleMobileMenu(false)" aria-label="Close navigation menu">&times;</button>
+    </div>
+    <div class="mobile-menu-links">
+      <a href="#/search" class="${routeName==='search'?'active':''}" onclick="toggleMobileMenu(false)">Search</a>
+      <a href="#/verify" class="${routeName==='verify'?'active':''}" onclick="toggleMobileMenu(false)">Verify a Property</a>
+      <a href="#/professionals" class="${routeName==='professionals'?'active':''}" onclick="toggleMobileMenu(false)">Professionals</a>
+      <a href="#/how-it-works" class="${routeName==='how-it-works'?'active':''}" onclick="toggleMobileMenu(false)">How it works</a>
+      <a href="#/safety" class="${routeName==='safety'?'active':''}" onclick="toggleMobileMenu(false)">Safety Centre</a>
+      <a href="#/about" class="${routeName==='about'?'active':''}" onclick="toggleMobileMenu(false)">About</a>
+    </div>
+    <div class="mobile-menu-utility">
+      <a href="#/how-it-works" onclick="toggleMobileMenu(false)">How verification works</a>
+      <a href="#/safety" onclick="toggleMobileMenu(false)">Safety &amp; education</a>
+      <a href="#/contact" onclick="toggleMobileMenu(false)">Contact</a>
+    </div>
+    <div class="mobile-menu-account">
+      <select id="mobileRoleSwitch" onchange="switchRole(this.value)" title="Demo role switcher">
+        ${ROLES.map(r=>`<option value="${r}" ${STATE.role===r?'selected':''}>${r}</option>`).join('')}
+      </select>
+      ${dashLinkForRole()}
+    </div>
+  </aside>
   <main>${contentHtml}</main>
   ${footer()}
   `;
@@ -481,7 +534,7 @@ function pageHome(){
   <section class="hero"><div class="container hero-grid">
     <div>
       <div class="eyebrow-tag">Lagos Mainland registry</div>
-      <h1>Find Property. Verify Information. Make Better Decisions.</h1>
+      <h1>Find Property.<br class="mobile-break"> Verify Information.<br class="mobile-break"> Make Better Decisions.</h1>
       <p class="lede">VerifyProp is a property information registry, not just a listings site. Every property carries a clear verification status, a unique Property ID, and a public record of exactly what a licensed professional checked.</p>
       <div class="hero-actions">
         <a href="#/search" class="btn btn-primary">Search properties</a>
@@ -1380,6 +1433,11 @@ function parseHash(){
   return {parts, qp};
 }
 function switchRole(role){ STATE.role = role; save(); render(); }
+function toggleMobileMenu(open){
+  document.body.classList.toggle('menu-open', open);
+  const button = document.querySelector('.hamburger');
+  if(button) button.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
 
 function render(){
   const {parts, qp} = parseHash();
@@ -1412,6 +1470,7 @@ function render(){
 window.addEventListener('hashchange', render);
 window.switchRole = switchRole;
 window.go = go;
+window.toggleMobileMenu = toggleMobileMenu;
 window.resetDemo = resetDemo;
 window.toggleSubmitForm = toggleSubmitForm;
 window.submitNewProperty = submitNewProperty;
@@ -1428,4 +1487,3 @@ render();
 </script>
 </body>
 </html>
-
